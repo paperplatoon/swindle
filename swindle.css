@@ -1,0 +1,53 @@
+.map-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-top: 6vh;
+    padding: 2vh 0.5vw;
+    height: 40vh;
+    width: 90vw;
+    margin-top: 20vh;
+    background-color: brown;
+  }
+
+  .top-stats-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    height: 5vh;
+    position: fixed;
+    padding: 1vh 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    z-index: 10;
+  }
+
+  .map-square {
+    width: 5vw;
+    height: 20vh;
+    background-color: rgb(200, 115, 70);
+    transition: background-color 1500ms ease-out;
+    border: 0.5px solid rgba(97, 48, 0, 0.756);
+  }
+
+  .player-here {
+    background-color: blue;
+  }
+
+  .enemy {
+    background-color: red;
+  }
+
+  .computer {
+    background-color: silver;
+  }
+
+  .player-computer {
+    background-color: blueviolet;
+  }
+
+  .empty {
+    background-color: black;
+  }
