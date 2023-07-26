@@ -37,11 +37,6 @@
     background-color: silver;
   }
 
-  .enemy-computer {
-    background-color: teal;
-  }
-
-
   .player-computer {
     background-color: blueviolet;
   }
@@ -50,7 +45,7 @@
     background-color: black;
   }
 
-  .player-here {
+  .player {
     background-color: blue;
   }
 
