@@ -6,6 +6,7 @@ let gameStartState = {
 
     currentPosition: 0,
     enemyPosition: 10,
+    computerPosition: 5,
     direction: "left",
     currentCash: 0,
 
@@ -18,8 +19,6 @@ async function changeState(newStateObj) {
     state = {...newStateObj};
     await renderScreen(state);
 }
-
-renderScreen(state)
 
 
 
@@ -122,7 +121,6 @@ async function calculateMoveChange(stateObj, squaresToMove) {
         
         if (newState.gameMap[newPosition] === "computer") {
             newState.gameMap[newPosition] = "player-computer"
-            newState.currentCash += 50;
         } else {
             newState.gameMap[newPosition] = "player"
         }
@@ -192,10 +190,16 @@ async function enemyMovement() {
                     newState.enemyPosition += 1
                 }
             }
-        
+        if (stateObj.currentPosition === 5) {
+            newState.currentCash +=1;
+        }
         })
+        
         await changeState(stateObj)
         await renderScreen(stateObj)
+        if (stateObj.enemyPosition === stateObj.currentPosition) {
+            loseTheGame("You got caught!")
+        }
     
 }
 
