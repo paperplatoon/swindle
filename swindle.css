@@ -2,6 +2,8 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     padding-top: 6vh;
     padding: 2vh 0.5vw;
     height: 40vh;
@@ -24,10 +26,14 @@
   }
 
   .map-square {
+    display: flex;
     width: 7.3vw;
     height: 20vh;
+    font-size: 3vh;
     transition: background-color 1500ms ease-out;
     border: 0.5px solid rgba(97, 48, 0, 0.756);
+    justify-content: center;
+    align-items: center;
   }
 
   .empty {
@@ -40,6 +46,9 @@
 
   .player-computer {
     background-color: blueviolet;
+    color: white;
+    font-size: 5vh;
+    transition: all 0.5s;;
   }
 
   .computer {

@@ -10,6 +10,10 @@ let gameStartState = {
         {
             computerPosition: 17,
             currentFunds: 5
+        },
+        {
+            computerPosition: 35,
+            currentFunds: 20
         }
     ],
     currentCash: 0,
