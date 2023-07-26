@@ -24,10 +24,30 @@
   }
 
   .map-square {
-    width: 5vw;
+    width: 7.3vw;
     height: 20vh;
     transition: background-color 1500ms ease-out;
     border: 0.5px solid rgba(97, 48, 0, 0.756);
+  }
+
+  
+
+ 
+  .computer {
+    background-color: silver;
+  }
+
+  .enemy-computer {
+    background-color: teal;
+  }
+
+
+  .player-computer {
+    background-color: blueviolet;
+  }
+
+  .empty {
+    background-color: black;
   }
 
   .player-here {
@@ -36,20 +56,4 @@
 
   .enemy {
     background-color: red;
-  }
-
-  .enemy-computer {
-    background-color: teal;
-  }
-
-  .computer {
-    background-color: silver;
-  }
-
-  .player-computer {
-    background-color: blueviolet;
-  }
-
-  .empty {
-    background-color: black;
   }

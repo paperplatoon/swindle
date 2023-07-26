@@ -1,12 +1,18 @@
+let row1 = ["player", "empty", "empty", "empty", "empty", "empty",
+            "empty", "empty", "empty", "empty", "empty", "empty"]
+let emptyRow = Array(12).fill("empty")
+let middlerow = ["empty", "empty", "empty", "empty", "empty", "computer", 
+                "empty", "empty", "empty", "empty", "empty", "empty"]
+let initialMap = [...row1, ...middlerow, ...emptyRow]
+let screenwidth = 12;
+
+
 let gameStartState = {
-    gameMap: ["player",
-        "empty", "empty", "empty", "empty", "computer", 
-        "empty", "empty", "empty", "empty", "enemy", 
-        "empty"],
+    gameMap: initialMap,
 
     currentPosition: 0,
-    enemyPosition: 10,
-    computerPosition: 5,
+    enemyPosition: 21,
+    computerPosition: 17,
     direction: "left",
     currentCash: 0,
 
@@ -33,7 +39,6 @@ async function renderTopBarStats(stateObj) {
 }
 
 async function renderScreen(stateObj) {
-    console.log("rendering screen, enemy position is " + stateObj.enemyPosition)
     document.getElementById("app").innerHTML = ""
     //create a mapDiv to append all your new squares to
     topBar = await renderTopBarStats(stateObj);
@@ -43,7 +48,6 @@ async function renderScreen(stateObj) {
     mapDiv.classList.add("map-div");
 
     stateObj.gameMap.forEach(async function (mapSquare, squareIndex) {
-        console.log("map sqare div"  + squareIndex + " is " + mapSquare)
         let mapSquareDiv = document.createElement("Div");
         mapSquareDiv.classList.add("map-square");
         if (stateObj.enemyPosition === squareIndex) {
@@ -82,21 +86,43 @@ document.addEventListener('keydown', async function(event) {
             stateObj = await RightArrow(stateObj);
             await changeState(stateObj)
             //await checkForDeath(stateObj)
+          } else if (event.key === 'ArrowDown' || event.key ==="s") {
+            // Execute your function for the right arrow key
+            stateObj = await DownArrow(stateObj);
+            await changeState(stateObj)
+            //await checkForDeath(stateObj)
+          } else if (event.key === 'ArrowUp' || event.key ==="w") {
+            // Execute your function for the right arrow key
+            stateObj = await UpArrow(stateObj);
+            await changeState(stateObj)
+            //await checkForDeath(stateObj)
           }
     //}
   });
 
 async function LeftArrow(stateObj) {   
-//make sure not drilling while in midair
     if (stateObj.currentPosition !== 0) {
         stateObj = await calculateMoveChange(stateObj, -1)
     }
     return stateObj
 }
 
+async function DownArrow(stateObj) {   
+    if (stateObj.currentPosition < initialMap.length-screenwidth) {
+        stateObj = await calculateMoveChange(stateObj, screenwidth)
+    }
+    return stateObj
+}
+
+async function UpArrow(stateObj) {   
+    if (stateObj.currentPosition > screenwidth-1) {
+        stateObj = await calculateMoveChange(stateObj, -screenwidth)
+    }
+    return stateObj
+}
+
 //7, 15, 23
 async function RightArrow(stateObj) {
-    //do nothing if you're in the air and space to your left isn't air
     if (stateObj.currentPosition !== stateObj.gameMap.length) {
         stateObj = await calculateMoveChange(stateObj, 1)
     }
@@ -138,40 +164,34 @@ async function loseTheGame(textString) {
   }
 }
 
-async function enemyMovement() {
+async function enemyMovementRow() {
         let stateObj = {...state}
-        console.log("enemy position is " + stateObj.enemyPosition)
         
         
         stateObj = await immer.produce(stateObj, (newState) => {
             if (newState.direction === "left") {
-                console.log("left loop")
                 //change direction and pause if on end
-                if (newState.enemyPosition === 1) {
+                if (newState.enemyPosition === 13) {
                     newState.direction = "right";  
                 } else {
                     //if moving to computer
                     if (newState.gameMap[newState.enemyPosition -1] === "computer") {
-                        console.log("moving left to computer ")
                         newState.gameMap[newState.enemyPosition -1] === "enemy-computer"
                         newState.gameMap[newState.enemyPosition] === "empty"
                     } else {
-                        console.log("moving left")
                         newState.gameMap[newState.enemyPosition -1] === "enemy"
                         //if moving away from computer, keep, otherwise make empty
                         if (newState.gameMap[newState.enemyPosition] === "enemy-computer") {
                             newState.gameMap[newState.enemyPosition] === "computer"
-                            console.log("moving left from computer ")
                         } else {
                             newState.gameMap[newState.enemyPosition] === "empty"
-                            console.log("moving left plain")
                         }
                     }
 
                     newState.enemyPosition -= 1
                 }
             } else {
-                if (state.enemyPosition === 10) {
+                if (state.enemyPosition === 22) {
                     newState.direction = "left";  
                 } else {
                     //if moving to computer
@@ -190,7 +210,7 @@ async function enemyMovement() {
                     newState.enemyPosition += 1
                 }
             }
-        if (stateObj.currentPosition === 5) {
+        if (stateObj.currentPosition === stateObj.computerPosition) {
             newState.currentCash +=1;
         }
         })
@@ -204,7 +224,7 @@ async function enemyMovement() {
 }
 
 function timeStuff() {
-    setInterval(enemyMovement, 400); // 500 milliseconds (half a second)
+    setInterval(enemyMovementRow, 400); // 500 milliseconds (half a second)
   }
   
 timeStuff()
