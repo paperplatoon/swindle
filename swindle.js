@@ -5,9 +5,13 @@ let gameStartState = {
     gameMap: Array(mapSize).fill("empty"),
 
     currentPosition: 0,
-    enemyPosition: 21,
-    computerPosition: 17,
-    direction: "left",
+    computerPosition: 16,
+    computers: [
+        {
+            computerPosition: 17,
+            currentFunds: 5
+        }
+    ],
     currentCash: 0,
 
     enemies: [
@@ -73,11 +77,19 @@ async function renderScreen(stateObj) {
                 mapSquareDiv.classList.add("enemy")
             }
         }
-        if (stateObj.computerPosition === squareIndex && stateObj.currentPosition === squareIndex) {
-            mapSquareDiv.classList.add("player-computer")
-        } else if (stateObj.computerPosition === squareIndex) {
-            mapSquareDiv.classList.add("computer")
-        } else if (stateObj.currentPosition === squareIndex) {
+
+        for (let i=0; i <stateObj.computers.length; i ++) {
+            if (stateObj.computers[i].computerPosition === squareIndex) {
+                if (stateObj.currentPosition === squareIndex) {
+                    mapSquareDiv.classList.add("player-computer")
+                } else {
+                    mapSquareDiv.classList.add("computer")
+               }
+               mapSquareDiv.textContent = stateObj.computers[i].currentFunds
+            }
+        }
+
+        if (stateObj.currentPosition === squareIndex) {
             mapSquareDiv.classList.add("player")
         } else {
             mapSquareDiv.classList.add("empty")
@@ -193,10 +205,14 @@ async function enemyMovementRow() {
                     }
                 }
             }
-            
-        if (stateObj.currentPosition === stateObj.computerPosition) {
-            newState.currentCash +=1;
-        }
+        
+            for (let i = 0; i < newState.computers.length; i++) {
+                if (newState.currentPosition === newState.computers[i].computerPosition && newState.computers[i].currentFunds > 0) {
+                    newState.currentCash +=1;
+                    newState.computers[i].currentFunds -=1
+                }
+            }
+       
     })
     for (let i = 0; i < stateObj.enemies.length; i++) {
         if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {

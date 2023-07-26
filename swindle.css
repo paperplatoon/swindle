@@ -30,20 +30,20 @@
     border: 0.5px solid rgba(97, 48, 0, 0.756);
   }
 
-  .computer {
-    background-color: silver;
-  }
-
-  .player-computer {
-    background-color: blueviolet;
-  }
-
   .empty {
     background-color: black;
   }
 
   .player {
     background-color: blue;
+  }
+
+  .player-computer {
+    background-color: blueviolet;
+  }
+
+  .computer {
+    background-color: silver;
   }
 
   .enemy {
