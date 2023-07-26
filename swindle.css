@@ -58,3 +58,7 @@
   .enemy {
     background-color: red;
   }
+
+  .vision-cone {
+    background-color: pink;
+  }

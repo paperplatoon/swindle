@@ -12,7 +12,7 @@ let gameStartState = {
             currentFunds: 5
         },
         {
-            computerPosition: 35,
+            computerPosition: 30,
             currentFunds: 20
         }
     ],
@@ -20,25 +20,28 @@ let gameStartState = {
 
     enemies: [
     {
-        enemyPosition: 11,
+        enemyPosition: 9,
         direction: "left",
-        leftmostSquare: 0,
+        leftmostSquare: 1,
         rightMostSquare: 11,
-        interval: 4
+        interval: 4,
+        visionCone: 2,
     },
     {
-        enemyPosition: 22,
+        enemyPosition: 18,
         direction: "left",
-        leftmostSquare: 14,
-        rightMostSquare: 21,
-        interval: 1
+        leftmostSquare: 12,
+        rightMostSquare: 23,
+        interval: 1,
+        visionCone: 1,
     },
     {
-        enemyPosition: 35,
+        enemyPosition: 30,
         direction: "left",
-        leftmostSquare: 25,
+        leftmostSquare: 24,
         rightMostSquare: 35,
-        interval: 2
+        interval: 1,
+        visionCone: 2,
     },
 
     ],
@@ -79,6 +82,31 @@ async function renderScreen(stateObj) {
         for (let i=0; i <stateObj.enemies.length; i ++) {
             if (stateObj.enemies[i].enemyPosition === squareIndex) {
                 mapSquareDiv.classList.add("enemy")
+            }
+
+            if (stateObj.enemies[i].visionCone > 0) {
+                if (stateObj.enemies[i].direction === "left") {
+                    for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
+                        //
+                        if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % 12  === ((squareIndex % 12)+ v)) ){
+                            mapSquareDiv.classList.add("vision-cone")
+
+                            if (stateObj.currentPosition === squareIndex) {
+                                loseTheGame("hit by left-moving enemy!")
+                            }
+                        }
+                    }  
+                } else {
+                    for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) {
+                        if (squareIndex === (stateObj.enemies[i].enemyPosition + v)  && (stateObj.enemies[i].enemyPosition % 12  === ((squareIndex % 12) - v))) {
+                            mapSquareDiv.classList.add("vision-cone")
+
+                            if (stateObj.currentPosition === squareIndex) {
+                                loseTheGame("hit by right-moving enemy!")
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -222,6 +250,10 @@ async function enemyMovementRow() {
         if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
             loseTheGame("You got caught!")
         }
+    }
+
+    if (stateObj[stateObj.currentPosition] === "vision-cone" ) {
+        loseTheGame("You got caught!")
     }
     
     await changeState(stateObj)
