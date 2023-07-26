@@ -26,8 +26,6 @@ async function changeState(newStateObj) {
     await renderScreen(state);
 }
 
-
-
 async function renderTopBarStats(stateObj) {
     let topBarDiv = document.createElement("Div")
     topBarDiv.classList.add("top-stats-bar")
@@ -52,20 +50,16 @@ async function renderScreen(stateObj) {
         mapSquareDiv.classList.add("map-square");
         if (stateObj.enemyPosition === squareIndex) {
             mapSquareDiv.classList.add("enemy")
+        } else if (stateObj.computerPosition === squareIndex && stateObj.currentPosition === squareIndex) {
+            mapSquareDiv.classList.add("player-computer")
+        } else if (stateObj.computerPosition === squareIndex) {
+            mapSquareDiv.classList.add("computer")
+        } else if (stateObj.currentPosition === squareIndex) {
+            mapSquareDiv.classList.add("player")
         } else {
-            if (mapSquare === "player") {
-                mapSquareDiv.classList.add("player-here")
-            } else if (mapSquare === "empty") {
-                mapSquareDiv.classList.add("empty")
-            }  else if (mapSquare === "computer") {
-                mapSquareDiv.classList.add("computer")
-            } else if (mapSquare === "player-computer") {
-                mapSquareDiv.classList.add("player-computer")
-            }
+            mapSquareDiv.classList.add("empty")
         }
-        
-        
-        
+
         mapDiv.append(mapSquareDiv)
     })
         document.getElementById("app").append(mapDiv)
@@ -130,97 +124,54 @@ async function RightArrow(stateObj) {
 }
 
 async function calculateMoveChange(stateObj, squaresToMove) {
-    let oldPosition = stateObj.currentPosition
     let newPosition = stateObj.currentPosition + squaresToMove
-    targetSquare = stateObj.gameMap[newPosition];
-    
-    if (targetSquare === "enemy") {
-        await loseTheGame("You need to avoid enemies!")    
-    }
 
     stateObj = await immer.produce(stateObj, async (newState) => {
-        if (newState.gameMap[oldPosition] === "player-computer") {
-            newState.gameMap[oldPosition] = "computer"
-        } else {
-            newState.gameMap[oldPosition] = "empty"
-        }
-        
-        if (newState.gameMap[newPosition] === "computer") {
-            newState.gameMap[newPosition] = "player-computer"
-        } else {
-            newState.gameMap[newPosition] = "player"
-        }
         newState.currentPosition = newPosition;
-        })
+    })
+
+    if (stateObj.currentPosition === stateObj.enemyPosition) {
+        loseTheGame("Don't move into enemies!")
+    }
     return stateObj
 }
 
 async function loseTheGame(textString) {
     let confirmText = textString + ` Click OK to try again`
     var confirmation = confirm(confirmText);
-
-  if (confirmation) {
-    location.reload();
-  }
+    if (confirmation) {
+        location.reload();
+    }
 }
 
 async function enemyMovementRow() {
         let stateObj = {...state}
-        
-        
+
         stateObj = await immer.produce(stateObj, (newState) => {
             if (newState.direction === "left") {
                 //change direction and pause if on end
                 if (newState.enemyPosition === 13) {
                     newState.direction = "right";  
                 } else {
-                    //if moving to computer
-                    if (newState.gameMap[newState.enemyPosition -1] === "computer") {
-                        newState.gameMap[newState.enemyPosition -1] === "enemy-computer"
-                        newState.gameMap[newState.enemyPosition] === "empty"
-                    } else {
-                        newState.gameMap[newState.enemyPosition -1] === "enemy"
-                        //if moving away from computer, keep, otherwise make empty
-                        if (newState.gameMap[newState.enemyPosition] === "enemy-computer") {
-                            newState.gameMap[newState.enemyPosition] === "computer"
-                        } else {
-                            newState.gameMap[newState.enemyPosition] === "empty"
-                        }
-                    }
-
                     newState.enemyPosition -= 1
                 }
             } else {
                 if (state.enemyPosition === 22) {
                     newState.direction = "left";  
                 } else {
-                    //if moving to computer
-                    if (newState.gameMap[newState.enemyPosition +1] === "computer") {
-                        newState.gameMap[newState.enemyPosition +1] === "enemy-computer"
-                        newState.gameMap[newState.enemyPosition] === "empty"
-                    } else {
-                        newState.gameMap[newState.enemyPosition +1] === "enemy"
-                        //if moving away from computer, keep, otherwise make empty
-                        if (newState.gameMap[newState.enemyPosition] === "enemy-computer") {
-                            newState.gameMap[newState.enemyPosition] === "computer"
-                        } else {
-                            newState.gameMap[newState.enemyPosition] === "empty"
-                        }
-                    }
                     newState.enemyPosition += 1
                 }
             }
         if (stateObj.currentPosition === stateObj.computerPosition) {
             newState.currentCash +=1;
         }
-        })
-        
-        await changeState(stateObj)
-        await renderScreen(stateObj)
-        if (stateObj.enemyPosition === stateObj.currentPosition) {
-            loseTheGame("You got caught!")
-        }
+    })
     
+    await changeState(stateObj)
+    await renderScreen(stateObj)
+    if (stateObj.enemyPosition === stateObj.currentPosition) {
+        loseTheGame("You got caught!")
+    }
 }
 
 function timeStuff() {
