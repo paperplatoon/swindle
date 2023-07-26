@@ -27,7 +27,7 @@
 
   .map-square {
     display: flex;
-    width: 7.3vw;
+    width: 5.5vw;
     height: 20vh;
     font-size: 3vh;
     transition: background-color 1500ms ease-out;
@@ -55,10 +55,12 @@
     background-color: silver;
   }
 
+  .vision-cone {
+    background-color: pink;
+  }
+
   .enemy {
     background-color: red;
   }
 
-  .vision-cone {
-    background-color: pink;
-  }
+ 

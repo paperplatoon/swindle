@@ -1,4 +1,4 @@
-let screenwidth = 12;
+let screenwidth = 16;
 let mapSize = screenwidth*3
 
 let gameStartState = {
@@ -20,26 +20,26 @@ let gameStartState = {
 
     enemies: [
     {
-        enemyPosition: 9,
+        enemyPosition: screenwidth + 4,
         direction: "left",
-        leftmostSquare: 1,
-        rightMostSquare: 11,
-        interval: 4,
+        leftmostSquare: screenwidth,
+        rightMostSquare: (screenwidth*2)-1,
+        interval: 3,
         visionCone: 2,
     },
     {
-        enemyPosition: 18,
+        enemyPosition: screenwidth + 10,
         direction: "left",
-        leftmostSquare: 12,
-        rightMostSquare: 23,
+        leftmostSquare: screenwidth + 1,
+        rightMostSquare: (screenwidth*2)-2,
         interval: 1,
         visionCone: 1,
     },
     {
-        enemyPosition: 30,
+        enemyPosition: (screenwidth*2) + 4,
         direction: "left",
-        leftmostSquare: 24,
-        rightMostSquare: 35,
+        leftmostSquare: (screenwidth*2),
+        rightMostSquare: (screenwidth*3)-1,
         interval: 1,
         visionCone: 2,
     },
@@ -88,7 +88,7 @@ async function renderScreen(stateObj) {
                 if (stateObj.enemies[i].direction === "left") {
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
                         //
-                        if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % 12  === ((squareIndex % 12)+ v)) ){
+                        if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
                             mapSquareDiv.classList.add("vision-cone")
 
                             if (stateObj.currentPosition === squareIndex) {
@@ -98,7 +98,7 @@ async function renderScreen(stateObj) {
                     }  
                 } else {
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) {
-                        if (squareIndex === (stateObj.enemies[i].enemyPosition + v)  && (stateObj.enemies[i].enemyPosition % 12  === ((squareIndex % 12) - v))) {
+                        if (squareIndex === (stateObj.enemies[i].enemyPosition + v)  && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth) - v))) {
                             mapSquareDiv.classList.add("vision-cone")
 
                             if (stateObj.currentPosition === squareIndex) {
