@@ -10,11 +10,32 @@ let gameStartState = {
     direction: "left",
     currentCash: 0,
 
-    enemies: [{
-        enemyPosition: 21,
-        direction: "left"
-    }],
+    enemies: [
+    {
+        enemyPosition: 11,
+        direction: "left",
+        leftmostSquare: 0,
+        rightMostSquare: 11,
+        interval: 4
+    },
+    {
+        enemyPosition: 22,
+        direction: "left",
+        leftmostSquare: 14,
+        rightMostSquare: 21,
+        interval: 1
+    },
+    {
+        enemyPosition: 35,
+        direction: "left",
+        leftmostSquare: 25,
+        rightMostSquare: 35,
+        interval: 2
+    },
 
+    ],
+
+    intervalNumber: 0,
     inTransition: false
 }
 
@@ -153,19 +174,22 @@ async function enemyMovementRow() {
         
 
         stateObj = await immer.produce(stateObj, (newState) => {
+            newState.intervalNumber += 1;
             for (let i = 0; i < stateObj.enemies.length; i++) {
-                if (newState.enemies[i].direction === "left") {
-                    //change direction and pause if on end
-                    if (newState.enemies[i].enemyPosition === 13) {
-                        newState.enemies[i].direction = "right";  
+                if (newState.intervalNumber % newState.enemies[i].interval === 0) {
+                    if (newState.enemies[i].direction === "left") {
+                        //change direction and pause if on end
+                        if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare) {
+                            newState.enemies[i].direction = "right";  
+                        } else {
+                            newState.enemies[i].enemyPosition -= 1
+                        }
                     } else {
-                        newState.enemies[i].enemyPosition -= 1
-                    }
-                } else {
-                    if (newState.enemies[i].enemyPosition === 22) {
-                        newState.enemies[i].direction = "left";  
-                    } else {
-                        newState.enemies[i].enemyPosition += 1
+                        if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare) {
+                            newState.enemies[i].direction = "left";  
+                        } else {
+                            newState.enemies[i].enemyPosition += 1
+                        }
                     }
                 }
             }
