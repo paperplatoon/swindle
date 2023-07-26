@@ -10,6 +10,11 @@ let gameStartState = {
     direction: "left",
     currentCash: 0,
 
+    enemies: [{
+        enemyPosition: 21,
+        direction: "left"
+    }],
+
     inTransition: false
 }
 
@@ -42,9 +47,12 @@ async function renderScreen(stateObj) {
     stateObj.gameMap.forEach(async function (mapSquare, squareIndex) {
         let mapSquareDiv = document.createElement("Div");
         mapSquareDiv.classList.add("map-square");
-        if (stateObj.enemyPosition === squareIndex) {
-            mapSquareDiv.classList.add("enemy")
-        } else if (stateObj.computerPosition === squareIndex && stateObj.currentPosition === squareIndex) {
+        for (let i=0; i <stateObj.enemies.length; i ++) {
+            if (stateObj.enemies[i].enemyPosition === squareIndex) {
+                mapSquareDiv.classList.add("enemy")
+            }
+        }
+        if (stateObj.computerPosition === squareIndex && stateObj.currentPosition === squareIndex) {
             mapSquareDiv.classList.add("player-computer")
         } else if (stateObj.computerPosition === squareIndex) {
             mapSquareDiv.classList.add("computer")
@@ -124,8 +132,10 @@ async function calculateMoveChange(stateObj, squaresToMove) {
         newState.currentPosition = newPosition;
     })
 
-    if (stateObj.currentPosition === stateObj.enemyPosition) {
-        loseTheGame("Don't move into enemies!")
+    for (let i = 0; i < stateObj.enemies.length; i++) {
+        if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
+            loseTheGame("Don't move into enemies!")
+        }
     }
     return stateObj
 }
@@ -140,32 +150,38 @@ async function loseTheGame(textString) {
 
 async function enemyMovementRow() {
         let stateObj = {...state}
+        
 
         stateObj = await immer.produce(stateObj, (newState) => {
-            if (newState.direction === "left") {
-                //change direction and pause if on end
-                if (newState.enemyPosition === 13) {
-                    newState.direction = "right";  
+            for (let i = 0; i < stateObj.enemies.length; i++) {
+                if (newState.enemies[i].direction === "left") {
+                    //change direction and pause if on end
+                    if (newState.enemies[i].enemyPosition === 13) {
+                        newState.enemies[i].direction = "right";  
+                    } else {
+                        newState.enemies[i].enemyPosition -= 1
+                    }
                 } else {
-                    newState.enemyPosition -= 1
-                }
-            } else {
-                if (state.enemyPosition === 22) {
-                    newState.direction = "left";  
-                } else {
-                    newState.enemyPosition += 1
+                    if (newState.enemies[i].enemyPosition === 22) {
+                        newState.enemies[i].direction = "left";  
+                    } else {
+                        newState.enemies[i].enemyPosition += 1
+                    }
                 }
             }
+            
         if (stateObj.currentPosition === stateObj.computerPosition) {
             newState.currentCash +=1;
         }
     })
+    for (let i = 0; i < stateObj.enemies.length; i++) {
+        if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
+            loseTheGame("You got caught!")
+        }
+    }
     
     await changeState(stateObj)
     await renderScreen(stateObj)
-    if (stateObj.enemyPosition === stateObj.currentPosition) {
-        loseTheGame("You got caught!")
-    }
 }
 
 function timeStuff() {
