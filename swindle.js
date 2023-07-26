@@ -1,14 +1,8 @@
-let row1 = ["player", "empty", "empty", "empty", "empty", "empty",
-            "empty", "empty", "empty", "empty", "empty", "empty"]
-let emptyRow = Array(12).fill("empty")
-let middlerow = ["empty", "empty", "empty", "empty", "empty", "computer", 
-                "empty", "empty", "empty", "empty", "empty", "empty"]
-let initialMap = [...row1, ...middlerow, ...emptyRow]
 let screenwidth = 12;
-
+let mapSize = screenwidth*3
 
 let gameStartState = {
-    gameMap: initialMap,
+    gameMap: Array(mapSize).fill("empty"),
 
     currentPosition: 0,
     enemyPosition: 21,
@@ -102,7 +96,7 @@ async function LeftArrow(stateObj) {
 }
 
 async function DownArrow(stateObj) {   
-    if (stateObj.currentPosition < initialMap.length-screenwidth) {
+    if (stateObj.currentPosition < stateObj.gameMap.length-screenwidth) {
         stateObj = await calculateMoveChange(stateObj, screenwidth)
     }
     return stateObj
