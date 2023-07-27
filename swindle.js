@@ -20,7 +20,7 @@ let gameStartState = {
 
     enemies: [
     {
-        enemyPosition: screenwidth - 7,
+        enemyPosition: screenwidth - 10,
         direction: "right",
         leftmostSquare: 2,
         rightMostSquare: screenwidth-1,
@@ -50,7 +50,8 @@ let gameStartState = {
     ],
 
     intervalNumber: 0,
-    firingTaser: false
+    firingTaser: false,
+    turnsTilTaserActive: 0
 }
 
 state = {...gameStartState}
@@ -66,7 +67,16 @@ async function renderTopBarStats(stateObj) {
     let cashDiv = document.createElement("Div")
     cashDiv.textContent = "Cash: " + stateObj.currentCash;
 
-    topBarDiv.append(cashDiv)
+    let taserDiv = document.createElement("Div")
+    let taserText = ``
+    if (stateObj.turnsTilTaserActive === 0) {
+        taserText = "Taser Ready"
+    } else {
+        taserText = `Taser Recharging: ` + Math.round(((16-stateObj.turnsTilTaserActive)/16)*100, 2) + "%"
+    }
+    taserDiv.textContent = taserText;
+
+    topBarDiv.append(cashDiv, taserDiv)
     return topBarDiv
 }
 
@@ -227,37 +237,34 @@ async function loseTheGame(textString) {
 }
 
 async function fireTaser(stateObj) {
-    console.log("firing taser")
-    //if not on leftmost square   
-    if (stateObj.currentPosition % screenwidth !== 0) {
-        console.log("firing taser left")
-        for (let e=0; e <stateObj.enemies.length; e++) {
-            if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1) {
-                console.log("hit enemy " + e + " on the left")
-                stateObj = immer.produce(stateObj, (newState) => {
-                    newState.enemies[e].stunned += 12;
-                    newState.firingTaser = true
-                })
-                
-            }
-        }    
-    }
-    //if not on rightmost
-    if ((stateObj.currentPosition +1) % screenwidth !== 0) {
-        console.log("firing taser right")
-        for (let e=0; e <stateObj.enemies.length; e++) {
-            if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1) {
-                console.log("hit enemy " + e + " on the right")
-                stateObj.enemies[e].stunned += 12;
-                stateObj = immer.produce(stateObj, (newState) => {
-                    newState.enemies[e].stunned += 12;
-                    console.log("enemy stunned for " + newState.enemies[e].stunned + " intervals")
-                    newState.firingTaser = true
-                })
+    if (stateObj.turnsTilTaserActive === 0) {
+        //if not on leftmost square   
+        if (stateObj.currentPosition % screenwidth !== 0) {
+            for (let e=0; e <stateObj.enemies.length; e++) {
+                if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1) {
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.enemies[e].stunned += 16;
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += 16;
+                    })
+                    
+                }
+            }    
+        }
+        //if not on rightmost
+        if ((stateObj.currentPosition +1) % screenwidth !== 0) {
+            for (let e=0; e <stateObj.enemies.length; e++) {
+                if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1) {
+                    stateObj.enemies[e].stunned += 16;
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.enemies[e].stunned += 16;
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += 16;
+                    })
+                }
             }
         }
     }
-
     return stateObj
 }
 
@@ -299,6 +306,9 @@ async function enemyMovementRow() {
             }
             newState.firingTaser = false;
             newState.intervalNumber += 1;
+            if (newState.turnsTilTaserActive > 0) {
+                newState.turnsTilTaserActive -= 1;
+            }
 
        
     })
