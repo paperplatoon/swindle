@@ -51,6 +51,10 @@
     transition: all 0.5s;;
   }
 
+  .player-taser {
+    background-color: aqua;
+  }
+
   .computer {
     background-color: silver;
   }

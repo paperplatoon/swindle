@@ -8,7 +8,7 @@ let gameStartState = {
     computerPosition: 16,
     computers: [
         {
-            computerPosition: 17,
+            computerPosition: screenwidth+2,
             currentFunds: 5
         },
         {
@@ -20,8 +20,8 @@ let gameStartState = {
 
     enemies: [
     {
-        enemyPosition: screenwidth - 4,
-        direction: "left",
+        enemyPosition: screenwidth - 7,
+        direction: "right",
         leftmostSquare: 2,
         rightMostSquare: screenwidth-1,
         interval: 3,
@@ -31,7 +31,7 @@ let gameStartState = {
     {
         enemyPosition: screenwidth + 10,
         direction: "left",
-        leftmostSquare: screenwidth + 1,
+        leftmostSquare: screenwidth + 2,
         rightMostSquare: (screenwidth*2)-2,
         interval: 1,
         visionCone: 1,
@@ -50,7 +50,7 @@ let gameStartState = {
     ],
 
     intervalNumber: 0,
-    inTransition: false
+    firingTaser: false
 }
 
 state = {...gameStartState}
@@ -125,7 +125,12 @@ async function renderScreen(stateObj) {
         }
 
         if (stateObj.currentPosition === squareIndex) {
-            mapSquareDiv.classList.add("player")
+            if (stateObj.firingTaser === true) {
+                mapSquareDiv.classList.add("player-taser")
+            } else {
+                mapSquareDiv.classList.add("player")
+            }
+            
         } else {
             mapSquareDiv.classList.add("empty")
         }
@@ -231,6 +236,7 @@ async function fireTaser(stateObj) {
                 console.log("hit enemy " + e + " on the left")
                 stateObj = immer.produce(stateObj, (newState) => {
                     newState.enemies[e].stunned += 12;
+                    newState.firingTaser = true
                 })
                 
             }
@@ -246,6 +252,7 @@ async function fireTaser(stateObj) {
                 stateObj = immer.produce(stateObj, (newState) => {
                     newState.enemies[e].stunned += 12;
                     console.log("enemy stunned for " + newState.enemies[e].stunned + " intervals")
+                    newState.firingTaser = true
                 })
             }
         }
@@ -290,7 +297,7 @@ async function enemyMovementRow() {
                     newState.enemies[e].stunned -=1
                 }
             }
-            
+            newState.firingTaser = false;
             newState.intervalNumber += 1;
 
        
