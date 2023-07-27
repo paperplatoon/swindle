@@ -20,12 +20,13 @@ let gameStartState = {
 
     enemies: [
     {
-        enemyPosition: screenwidth + 4,
+        enemyPosition: screenwidth - 4,
         direction: "left",
-        leftmostSquare: screenwidth,
-        rightMostSquare: (screenwidth*2)-1,
+        leftmostSquare: 2,
+        rightMostSquare: screenwidth-1,
         interval: 3,
         visionCone: 2,
+        stunned: 0,
     },
     {
         enemyPosition: screenwidth + 10,
@@ -34,6 +35,7 @@ let gameStartState = {
         rightMostSquare: (screenwidth*2)-2,
         interval: 1,
         visionCone: 1,
+        stunned: 0,
     },
     {
         enemyPosition: (screenwidth*2) + 4,
@@ -42,6 +44,7 @@ let gameStartState = {
         rightMostSquare: (screenwidth*3)-1,
         interval: 1,
         visionCone: 2,
+        stunned: 0,
     },
 
     ],
@@ -157,6 +160,11 @@ document.addEventListener('keydown', async function(event) {
             stateObj = await UpArrow(stateObj);
             await changeState(stateObj)
             //await checkForDeath(stateObj)
+          } else if (event.key === 't') {
+            // Execute your function for the right arrow key
+            stateObj = await fireTaser(stateObj);
+            await changeState(stateObj)
+            //await checkForDeath(stateObj)
           }
     //}
   });
@@ -213,14 +221,46 @@ async function loseTheGame(textString) {
     }
 }
 
+async function fireTaser(stateObj) {
+    console.log("firing taser")
+    //if not on leftmost square   
+    if (stateObj.currentPosition % screenwidth !== 0) {
+        console.log("firing taser left")
+        for (let e=0; e <stateObj.enemies.length; e++) {
+            if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1) {
+                console.log("hit enemy " + e + " on the left")
+                stateObj = immer.produce(stateObj, (newState) => {
+                    newState.enemies[e].stunned += 12;
+                })
+                
+            }
+        }    
+    }
+    //if not on rightmost
+    if ((stateObj.currentPosition +1) % screenwidth !== 0) {
+        console.log("firing taser right")
+        for (let e=0; e <stateObj.enemies.length; e++) {
+            if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1) {
+                console.log("hit enemy " + e + " on the right")
+                stateObj.enemies[e].stunned += 12;
+                stateObj = immer.produce(stateObj, (newState) => {
+                    newState.enemies[e].stunned += 12;
+                    console.log("enemy stunned for " + newState.enemies[e].stunned + " intervals")
+                })
+            }
+        }
+    }
+
+    return stateObj
+}
+
 async function enemyMovementRow() {
         let stateObj = {...state}
         
 
         stateObj = await immer.produce(stateObj, (newState) => {
-            newState.intervalNumber += 1;
             for (let i = 0; i < stateObj.enemies.length; i++) {
-                if (newState.intervalNumber % newState.enemies[i].interval === 0) {
+                if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                     if (newState.enemies[i].direction === "left") {
                         //change direction and pause if on end
                         if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare) {
@@ -244,6 +284,15 @@ async function enemyMovementRow() {
                     newState.computers[i].currentFunds -=1
                 }
             }
+
+            for (let e = 0; e < newState.enemies.length; e++) { 
+                if (newState.enemies[e].stunned > 0) {
+                    newState.enemies[e].stunned -=1
+                }
+            }
+            
+            newState.intervalNumber += 1;
+
        
     })
     for (let i = 0; i < stateObj.enemies.length; i++) {
