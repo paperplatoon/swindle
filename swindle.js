@@ -27,6 +27,7 @@ let gameStartState = {
         interval: 3,
         visionCone: 2,
         stunned: 0,
+        enemyType: "patrol",
     },
     {
         enemyPosition: screenwidth + 10,
@@ -36,15 +37,17 @@ let gameStartState = {
         interval: 1,
         visionCone: 1,
         stunned: 0,
+        enemyType: "patrol",
     },
     {
         enemyPosition: (screenwidth*2) + 4,
-        direction: "left",
+        direction: "right",
         leftmostSquare: (screenwidth*2),
         rightMostSquare: (screenwidth*3)-1,
         interval: 1,
-        visionCone: 2,
+        visionCone: 0,
         stunned: 0,
+        enemyType: "border",
     },
 
     ],
@@ -274,50 +277,82 @@ async function enemyMovementRow() {
 
         stateObj = await immer.produce(stateObj, (newState) => {
             for (let i = 0; i < stateObj.enemies.length; i++) {
-                if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
-                    if (newState.enemies[i].direction === "left") {
-                        //change direction and pause if on end
-                        if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare) {
-                            newState.enemies[i].direction = "right";  
+                if (stateObj.enemies[i].enemyType === "patrol" ) {
+                    if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
+                        if (newState.enemies[i].direction === "left") {
+                            //change direction and pause if on end
+                            if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare) {
+                                newState.enemies[i].direction = "right";  
+                            } else {
+                                newState.enemies[i].enemyPosition -= 1
+                            }
                         } else {
-                            newState.enemies[i].enemyPosition -= 1
+                            if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare) {
+                                newState.enemies[i].direction = "left";  
+                            } else {
+                                newState.enemies[i].enemyPosition += 1
+                            }
                         }
-                    } else {
-                        if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare) {
-                            newState.enemies[i].direction = "left";  
-                        } else {
-                            newState.enemies[i].enemyPosition += 1
+                    }
+                } else if (stateObj.enemies[i].enemyType === "border" ) {
+                    if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
+                        if (newState.enemies[i].direction === "left") {
+                            //if left and on leftmost square, go down
+                            if (newState.enemies[i].enemyPosition % screenwidth ===0 ) {
+                                newState.enemies[i].direction = "down";  
+                            } else {
+                                newState.enemies[i].enemyPosition -= 1
+                            }
+                        } else if (newState.enemies[i].direction === "down") {
+                            if (newState.enemies[i].enemyPosition >= mapSize-screenwidth) {
+                                newState.enemies[i].direction = "right";  
+                            } else {
+                                newState.enemies[i].enemyPosition += screenwidth
+                            }
+                        } else if (newState.enemies[i].direction === "right") {
+                            if ((newState.enemies[i].enemyPosition+1) % screenwidth === 0) {
+                                newState.enemies[i].direction = "up";  
+                            } else {
+                                newState.enemies[i].enemyPosition += 1
+                            }
+                        } else if (newState.enemies[i].direction === "up") {
+                            if ((newState.enemies[i].enemyPosition) < screenwidth) {
+                                newState.enemies[i].direction = "left";  
+                            } else {
+                                newState.enemies[i].enemyPosition -= screenwidth
+                            }
                         }
                     }
                 }
             }
-        
+            //siphon cash if player is at computer
             for (let i = 0; i < newState.computers.length; i++) {
                 if (newState.currentPosition === newState.computers[i].computerPosition && newState.computers[i].currentFunds > 0) {
                     newState.currentCash +=1;
                     newState.computers[i].currentFunds -=1
                 }
             }
-
+            //decrement enemy statuses like stun
             for (let e = 0; e < newState.enemies.length; e++) { 
                 if (newState.enemies[e].stunned > 0) {
                     newState.enemies[e].stunned -=1
                 }
             }
+            //increment things like taser recharge and increase interval
             newState.firingTaser = false;
-            newState.intervalNumber += 1;
             if (newState.turnsTilTaserActive > 0) {
                 newState.turnsTilTaserActive -= 1;
             }
+            newState.intervalNumber += 1;
 
        
     })
+
     for (let i = 0; i < stateObj.enemies.length; i++) {
         if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
             loseTheGame("You got caught!")
         }
     }
-
     if (stateObj[stateObj.currentPosition] === "vision-cone" ) {
         loseTheGame("You got caught!")
     }
