@@ -14,6 +14,7 @@ let gameStartState = {
     firingTaser: false,
     turnsTilTaserActive: 0,
     stateIsSetUp: false,
+    exitPosition: 100,
 }
 
 
@@ -24,6 +25,7 @@ async function setUpState(stateObj, layoutObj) {
       newState.computers = layoutObj.computers
       newState.currentPosition = layoutObj.currentPosition
       newState.stateIsSetUp = true;
+      newState.exitPosition = layoutObj.exitPosition
       screenwidth = layoutObj.screenwidth
       mapSize = layoutObj.mapRows * layoutObj.screenwidth  
     })
@@ -84,10 +86,8 @@ async function renderScreen(stateObj) {
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
                         console.log("enemy " + i + " on vision cone loop " + v + " has position" + stateObj.enemies[i].enemyPosition )
 
-                        //
                         if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
                             mapSquareDiv.classList.add("vision-cone")
-                            
 
                             if (stateObj.currentPosition === squareIndex) {
                                 loseTheGame("hit by left-moving enemy!")
@@ -117,6 +117,11 @@ async function renderScreen(stateObj) {
                }
                mapSquareDiv.textContent = stateObj.computers[i].currentFunds
             }
+        }
+
+        if (stateObj.exitPosition === squareIndex) {
+            mapSquareDiv.classList.add("trapdoor")
+            mapSquareDiv.textContent = "Exit"
         }
 
         if (stateObj.currentPosition === squareIndex) {
@@ -337,6 +342,11 @@ async function enemyMovementRow() {
     }
     if (stateObj[stateObj.currentPosition] === "vision-cone" ) {
         loseTheGame("You got caught!")
+    }
+
+    if (stateObj.currentPosition === stateObj.exitPosition ) {
+        let winString = `You escaped with $` + stateObj.currentCash + ` in loot!`
+        loseTheGame(winString)
     }
     
     await changeState(stateObj)
