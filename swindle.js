@@ -5,64 +5,38 @@ let gameStartState = {
     gameMap: Array(mapSize).fill("empty"),
 
     currentPosition: 0,
-    computerPosition: 16,
-    computers: [
-        {
-            computerPosition: screenwidth+2,
-            currentFunds: 5
-        },
-        {
-            computerPosition: 30,
-            currentFunds: 20
-        }
-    ],
+    computers: [],
     currentCash: 0,
 
-    enemies: [
-    {
-        enemyPosition: screenwidth - 10,
-        direction: "right",
-        leftmostSquare: 2,
-        rightMostSquare: screenwidth-1,
-        interval: 3,
-        visionCone: 2,
-        stunned: 0,
-        enemyType: "patrol",
-    },
-    {
-        enemyPosition: screenwidth + 10,
-        direction: "left",
-        leftmostSquare: screenwidth + 2,
-        rightMostSquare: (screenwidth*2)-2,
-        interval: 1,
-        visionCone: 1,
-        stunned: 0,
-        enemyType: "patrol",
-    },
-    {
-        enemyPosition: (screenwidth*2) + 4,
-        direction: "right",
-        leftmostSquare: (screenwidth*2),
-        rightMostSquare: (screenwidth*3)-1,
-        interval: 1,
-        visionCone: 0,
-        stunned: 0,
-        enemyType: "border",
-    },
-
-    ],
+    enemies: [],
 
     intervalNumber: 0,
     firingTaser: false,
-    turnsTilTaserActive: 0
+    turnsTilTaserActive: 0,
+    stateIsSetUp: false,
 }
 
-state = {...gameStartState}
+
+
+async function setUpState(stateObj, layoutObj) {
+    stateObj = immer.produce(stateObj, (newState) => {
+      newState.enemies = layoutObj.enemies
+      newState.computers = layoutObj.computers
+      newState.currentPosition = layoutObj.currentPosition
+      newState.stateIsSetUp = true;
+      screenwidth = layoutObj.screenwidth
+      mapSize = layoutObj.mapRows * layoutObj.screenwidth  
+    })
+    await changeState(stateObj);
+}
 
 async function changeState(newStateObj) {
     state = {...newStateObj};
     await renderScreen(state);
 }
+
+state = {...gameStartState}
+
 
 async function renderTopBarStats(stateObj) {
     let topBarDiv = document.createElement("Div")
@@ -84,6 +58,9 @@ async function renderTopBarStats(stateObj) {
 }
 
 async function renderScreen(stateObj) {
+    if (stateObj.stateIsSetUp === false) {
+        stateObj = await setUpState(stateObj, testLayout);
+    }
     document.getElementById("app").innerHTML = ""
     //create a mapDiv to append all your new squares to
     topBar = await renderTopBarStats(stateObj);
@@ -101,11 +78,16 @@ async function renderScreen(stateObj) {
             }
 
             if (stateObj.enemies[i].visionCone > 0) {
+                
                 if (stateObj.enemies[i].direction === "left") {
+                    
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
+                        console.log("enemy " + i + " on vision cone loop " + v + " has position" + stateObj.enemies[i].enemyPosition )
+
                         //
                         if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
                             mapSquareDiv.classList.add("vision-cone")
+                            
 
                             if (stateObj.currentPosition === squareIndex) {
                                 loseTheGame("hit by left-moving enemy!")
