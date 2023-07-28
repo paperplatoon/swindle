@@ -1,5 +1,5 @@
 let screenwidth = 16;
-let mapSize = screenwidth*3
+let mapSize = screenwidth*7
 
 let gameStartState = {
     gameMap: Array(mapSize).fill("empty"),
@@ -15,6 +15,9 @@ let gameStartState = {
     turnsTilTaserActive: 0,
     stateIsSetUp: false,
     exitPosition: 100,
+
+    screenwidth: screenwidth,
+    mapSize: mapSize,
 }
 
 
@@ -26,10 +29,12 @@ async function setUpState(stateObj, layoutObj) {
       newState.currentPosition = layoutObj.currentPosition
       newState.stateIsSetUp = true;
       newState.exitPosition = layoutObj.exitPosition
-      screenwidth = layoutObj.screenwidth
-      mapSize = layoutObj.mapRows * layoutObj.screenwidth  
+      newState.screenwidth = layoutObj.screenwidth
+      newState.mapSize = layoutObj.mapRows * layoutObj.screenwidth
+      newState.gameMap = layoutObj.mapArray
     })
     await changeState(stateObj);
+    return stateObj
 }
 
 async function changeState(newStateObj) {
@@ -61,7 +66,7 @@ async function renderTopBarStats(stateObj) {
 
 async function renderScreen(stateObj) {
     if (stateObj.stateIsSetUp === false) {
-        stateObj = await setUpState(stateObj, testLayout);
+        stateObj = await setUpState(stateObj, testLayout2);
     }
     document.getElementById("app").innerHTML = ""
     //create a mapDiv to append all your new squares to
@@ -72,8 +77,15 @@ async function renderScreen(stateObj) {
     mapDiv.classList.add("map-div");
 
     stateObj.gameMap.forEach(async function (mapSquare, squareIndex) {
+
         let mapSquareDiv = document.createElement("Div");
         mapSquareDiv.classList.add("map-square");
+        
+        if (mapSquare === "empty") {
+            mapSquareDiv.classList.add("empty")
+        } else if (mapSquare === "wall") {
+            mapSquareDiv.classList.add("wall")
+        }
         for (let i=0; i <stateObj.enemies.length; i ++) {
             if (stateObj.enemies[i].enemyPosition === squareIndex) {
                 mapSquareDiv.classList.add("enemy")
@@ -136,6 +148,7 @@ async function renderScreen(stateObj) {
         }
 
         mapDiv.append(mapSquareDiv)
+        
     })
         document.getElementById("app").append(mapDiv)
 }
@@ -175,21 +188,21 @@ document.addEventListener('keydown', async function(event) {
   });
 
 async function LeftArrow(stateObj) {   
-    if (stateObj.currentPosition !== 0) {
+    if (stateObj.currentPosition % screenwidth !== 0 && stateObj.gameMap[stateObj.currentPosition-1] !== "wall") {
         stateObj = await calculateMoveChange(stateObj, -1)
     }
     return stateObj
 }
 
 async function DownArrow(stateObj) {   
-    if (stateObj.currentPosition < stateObj.gameMap.length-screenwidth) {
+    if (stateObj.currentPosition < stateObj.gameMap.length-screenwidth && stateObj.gameMap[stateObj.currentPosition+screenwidth] !== "wall") {
         stateObj = await calculateMoveChange(stateObj, screenwidth)
     }
     return stateObj
 }
 
 async function UpArrow(stateObj) {   
-    if (stateObj.currentPosition > screenwidth-1) {
+    if (stateObj.currentPosition > screenwidth-1 && stateObj.gameMap[stateObj.currentPosition-screenwidth] !== "wall") {
         stateObj = await calculateMoveChange(stateObj, -screenwidth)
     }
     return stateObj
@@ -197,7 +210,8 @@ async function UpArrow(stateObj) {
 
 //7, 15, 23
 async function RightArrow(stateObj) {
-    if (stateObj.currentPosition !== stateObj.gameMap.length) {
+    if ((stateObj.currentPosition+1) % screenwidth !== 0  && stateObj.gameMap[stateObj.currentPosition+1] !== "wall") {
+        console.log("currenet position " + stateObj.currentPosition)
         stateObj = await calculateMoveChange(stateObj, 1)
     }
     return stateObj
