@@ -14,6 +14,7 @@ let gameStartState = {
     intervalNumber: 0,
     firingTaser: false,
     turnsTilTaserActive: 0,
+    taserTiles: 2,
     stateIsSetUp: false,
     exitPosition: 100,
 
@@ -253,29 +254,35 @@ async function loseTheGame(textString) {
 
 async function fireTaser(stateObj) {
     if (stateObj.turnsTilTaserActive === 0) {
-        //if not on leftmost square   
-        if (stateObj.currentPosition % screenwidth !== 0) {
-            for (let e=0; e <stateObj.enemies.length; e++) {
-                if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1) {
-                    stateObj = immer.produce(stateObj, (newState) => {
-                        newState.enemies[e].stunned += 16;
-                        newState.firingTaser = true
-                        newState.turnsTilTaserActive += 16;
-                    })
-                    
-                }
-            }    
-        }
+        //if not on leftmost square 
+        for (t=0; t < stateObj.taserTiles; t++) {
+            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1-t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            newState.enemies[e].stunned += 16;
+                            newState.firingTaser = true
+                            newState.turnsTilTaserActive += 16;
+                        })
+                        
+                    }
+                }    
+            }
+
+        }  
+        
         //if not on rightmost
-        if ((stateObj.currentPosition +1) % screenwidth !== 0) {
-            for (let e=0; e <stateObj.enemies.length; e++) {
-                if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1) {
-                    stateObj.enemies[e].stunned += 16;
-                    stateObj = immer.produce(stateObj, (newState) => {
-                        newState.enemies[e].stunned += 16;
-                        newState.firingTaser = true
-                        newState.turnsTilTaserActive += 16;
-                    })
+        for (t=0; t < stateObj.taserTiles; t++) {
+            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
+                        stateObj.enemies[e].stunned += 16;
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            newState.enemies[e].stunned += 16;
+                            newState.firingTaser = true
+                            newState.turnsTilTaserActive += 16;
+                        })
+                    }
                 }
             }
         }
@@ -409,7 +416,7 @@ async function enemyMovementRow() {
 }
 
 function timeStuff() {
-    setInterval(enemyMovementRow, 250); // 500 milliseconds (half a second)
+    setInterval(enemyMovementRow, 350); // 500 milliseconds (half a second)
   }
   
 timeStuff()
