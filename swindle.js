@@ -13,18 +13,34 @@ let gameStartState = {
 
     intervalNumber: 0,
     firingTaser: false,
-    turnsTilTaserActive: 0,
-    taserTiles: 2,
+    
+    
 
     firingLaser: false,
-    turnsTilLaserActive: 0,
-    laserTiles: 1,
+    
+    
 
     stateIsSetUp: false,
     exitPosition: 100,
 
     screenwidth: screenwidth,
     mapSize: mapSize,
+
+    //bonuses
+    
+    laserTiles: 1,
+    turnsTilLaserActive: 0,
+    laserDelay: 30,
+
+    taserTiles: 2,
+    turnsTilTaserActive: 0,
+    taserDelay: 18,
+    stunLength: 18,
+
+    siphonSpeed: 0,
+    extraComputerCash: 0,
+    extraHeistCash: 0,
+
 }
 
 
@@ -39,6 +55,10 @@ async function setUpState(stateObj, layoutObj) {
       newState.screenwidth = layoutObj.screenwidth
       newState.mapSize = layoutObj.mapRows * layoutObj.screenwidth
       newState.gameMap = layoutObj.mapArray
+
+      for (let c=0; c < newState.computers.length; c ++) {
+        newState.computers[c].currentFunds += newState.extraComputerCash
+      }
     })
     await changeState(stateObj);
     return stateObj
@@ -63,7 +83,7 @@ async function renderTopBarStats(stateObj) {
     if (stateObj.turnsTilTaserActive === 0) {
         taserText = "Taser Ready - Press T"
     } else {
-        taserText = `Taser Recharging: ` + Math.round(((16-stateObj.turnsTilTaserActive)/16)*100, 2) + "%"
+        taserText = `Taser Recharging: ` + Math.round(((stateObj.taserDelay-stateObj.turnsTilTaserActive)/stateObj.taserDelay)*100, 2) + "%"
     }
     taserDiv.textContent = taserText;
 
@@ -72,7 +92,7 @@ async function renderTopBarStats(stateObj) {
     if (stateObj.turnsTilLaserActive === 0) {
         laserText = "Laser Ready - Press L"
     } else {
-        laserText = `Laser Recharging: ` + Math.round(((24-stateObj.turnsTilLaserActive)/24)*100, 2) + "%"
+        laserText = `Laser Recharging: ` + Math.round(((stateObj.laserDelay-stateObj.turnsTilLaserActive)/stateObj.laserDelay)*100, 2) + "%"
     }
     laserDiv.textContent = laserText;
 
@@ -288,9 +308,9 @@ async function fireTaser(stateObj) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
                     if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1-t) {
                         stateObj = immer.produce(stateObj, (newState) => {
-                            newState.enemies[e].stunned += 16;
+                            newState.enemies[e].stunned += newState.stunLength;
                             newState.firingTaser = true
-                            newState.turnsTilTaserActive += 16;
+                            newState.turnsTilTaserActive += newState.taserDelay;
                         })
                         
                     }
@@ -305,9 +325,9 @@ async function fireTaser(stateObj) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
                     if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
                         stateObj = immer.produce(stateObj, (newState) => {
-                            newState.enemies[e].stunned += 16;
+                            newState.enemies[e].stunned += newState.stunLength;
                             newState.firingTaser = true
-                            newState.turnsTilTaserActive += 16;
+                            newState.turnsTilTaserActive += newState.taserDelay;
                         })
                     }
                 }
@@ -331,7 +351,7 @@ async function fireLaser(stateObj) {
                             console.log("deleting enemy")
                             newState.enemies.splice(e, 1)
                             newState.firingLaser = true
-                            newState.turnsTilLaserActive += 24;
+                            newState.turnsTilLaserActive += newState.laserDelay;
                         })
                         
                     }
@@ -349,7 +369,7 @@ async function fireLaser(stateObj) {
                             console.log("deleting enemy")
                             newState.enemies.splice(e, 1)
                             newState.firingLaser = true
-                            newState.turnsTilLaserActive += 24;
+                            newState.turnsTilLaserActive += newState.laserDelay;
                         })
                     }
                 }
@@ -446,8 +466,14 @@ async function enemyMovementRow() {
             //siphon cash if player is at computer
             for (let i = 0; i < newState.computers.length; i++) {
                 if (newState.currentPosition === newState.computers[i].computerPosition && newState.computers[i].currentFunds > 0) {
-                    newState.currentCash +=1;
-                    newState.computers[i].currentFunds -=1
+                    if (newState.computers[i].currentFunds > 1+newState.siphonSpeed) {
+                        newState.currentCash += (1 +newState.siphonSpeed);
+                        newState.computers[i].currentFunds -= (1 +newState.siphonSpeed)    
+                    } else {
+                        newState.currentCash += newState.computers[i].currentFunds
+                        newState.computers[i].currentFunds = 0 
+                    }
+                    
                 }
             }
             //decrement enemy statuses like stun
@@ -480,7 +506,12 @@ async function enemyMovementRow() {
     }
 
     if (stateObj.currentPosition === stateObj.exitPosition ) {
-        let winString = `You escaped with $` + stateObj.currentCash + ` in loot!`
+        let winString = `You escaped with $` + stateObj.currentCash + ` in loot`
+        stateObj = immer.produce(stateObj, (newState) => {
+            newState.currentCash += newState.extraHeistCash;
+            winString += ` and $` + newState.extraHeistCash + ` worth of intel to sell`
+        })
+        winString += `!`
         loseTheGame(winString)
     }
     
