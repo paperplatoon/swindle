@@ -98,8 +98,15 @@ async function renderScreen(stateObj) {
                     
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
 
+                        //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                         if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
-                            mapSquareDiv.classList.add("vision-cone")
+                            if (stateObj.gameMap[stateObj.enemies[i].enemyPosition - v] !== "wall" && (stateObj.enemies[i].enemyPosition % screenwidth) -  (squareIndex % screenwidth)) {
+                                if (stateObj.gameMap[squareIndex] !== "wall" && stateObj.gameMap[stateObj.enemies[i].enemyPosition - (v-1)] !== "wall") {
+                                    mapSquareDiv.classList.add("vision-cone")
+                                }
+                                
+                            }
+                            
 
                             if (stateObj.currentPosition === squareIndex) {
                                 loseTheGame("hit by left-moving enemy!")
@@ -109,7 +116,9 @@ async function renderScreen(stateObj) {
                 } else {
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) {
                         if (squareIndex === (stateObj.enemies[i].enemyPosition + v)  && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth) - v))) {
-                            mapSquareDiv.classList.add("vision-cone")
+                            if (stateObj.gameMap[stateObj.enemies[i].enemyPosition + v] !== "wall"&& stateObj.gameMap[stateObj.enemies[i].enemyPosition + (v-1)] !== "wall") {
+                                mapSquareDiv.classList.add("vision-cone")
+                            }
 
                             if (stateObj.currentPosition === squareIndex) {
                                 loseTheGame("hit by right-moving enemy!")
@@ -398,7 +407,7 @@ async function enemyMovementRow() {
 }
 
 function timeStuff() {
-    setInterval(enemyMovementRow, 500); // 500 milliseconds (half a second)
+    setInterval(enemyMovementRow, 400); // 500 milliseconds (half a second)
   }
   
 timeStuff()
