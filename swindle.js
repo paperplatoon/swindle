@@ -96,7 +96,6 @@ async function renderScreen(stateObj) {
                 if (stateObj.enemies[i].direction === "left") {
                     
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
-                        console.log("enemy " + i + " on vision cone loop " + v + " has position" + stateObj.enemies[i].enemyPosition )
 
                         if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
                             mapSquareDiv.classList.add("vision-cone")
@@ -211,7 +210,7 @@ async function UpArrow(stateObj) {
 //7, 15, 23
 async function RightArrow(stateObj) {
     if ((stateObj.currentPosition+1) % screenwidth !== 0  && stateObj.gameMap[stateObj.currentPosition+1] !== "wall") {
-        console.log("currenet position " + stateObj.currentPosition)
+        console.log("current position " + stateObj.currentPosition)
         stateObj = await calculateMoveChange(stateObj, 1)
     }
     return stateObj
@@ -282,13 +281,13 @@ async function enemyMovementRow() {
                     if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                         if (newState.enemies[i].direction === "left") {
                             //change direction and pause if on end
-                            if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare) {
+                            if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare || newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
                                 newState.enemies[i].direction = "right";  
                             } else {
                                 newState.enemies[i].enemyPosition -= 1
                             }
                         } else {
-                            if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare) {
+                            if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare|| newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
                                 newState.enemies[i].direction = "left";  
                             } else {
                                 newState.enemies[i].enemyPosition += 1
@@ -298,15 +297,24 @@ async function enemyMovementRow() {
                 } else if (stateObj.enemies[i].enemyType === "border" ) {
                     if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                         if (newState.enemies[i].direction === "left") {
+                            console.log("border enemy going left")
                             //if left and on leftmost square, go down
                             if (newState.enemies[i].enemyPosition % screenwidth ===0 ) {
-                                newState.enemies[i].direction = "down";  
+                                newState.enemies[i].direction = "down"; 
+                            } else if (newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
+                                newState.enemies[i].direction = "down"; 
+                            } else if (newState.enemies[i].enemyPosition > screenwidth-1 && newState.gameMap[newState.enemies[i].enemyPosition - screenwidth+1] === "wall") {
+                                    newState.enemies[i].direction = "up";  
                             } else {
                                 newState.enemies[i].enemyPosition -= 1
                             }
                         } else if (newState.enemies[i].direction === "down") {
-                            if (newState.enemies[i].enemyPosition >= mapSize-screenwidth) {
+                            console.log("border enemy going down")
+                            //if on bottom, go right
+                            if (newState.enemies[i].enemyPosition >= mapSize-screenwidth || newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "wall") {
                                 newState.enemies[i].direction = "right";  
+                            } else if (newState.enemies[i].enemyPosition % screenwidth !==0 && newState.gameMap[newState.enemies[i].enemyPosition - 1] === "empty") {
+                                    newState.enemies[i].direction = "left";  
                             } else {
                                 newState.enemies[i].enemyPosition += screenwidth
                             }
@@ -326,6 +334,7 @@ async function enemyMovementRow() {
                     }
                 }
             }
+        
             //siphon cash if player is at computer
             for (let i = 0; i < newState.computers.length; i++) {
                 if (newState.currentPosition === newState.computers[i].computerPosition && newState.computers[i].currentFunds > 0) {
