@@ -116,6 +116,8 @@ async function renderScreen(stateObj) {
                 } else {
                     for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) {
                         if (squareIndex === (stateObj.enemies[i].enemyPosition + v)  && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth) - v))) {
+                            //for i up to the  current value of v, check if square index = wall
+                            let isWall = false;
                             if (stateObj.gameMap[stateObj.enemies[i].enemyPosition + v] !== "wall"&& stateObj.gameMap[stateObj.enemies[i].enemyPosition + (v-1)] !== "wall") {
                                 mapSquareDiv.classList.add("vision-cone")
                             }
@@ -407,7 +409,7 @@ async function enemyMovementRow() {
 }
 
 function timeStuff() {
-    setInterval(enemyMovementRow, 400); // 500 milliseconds (half a second)
+    setInterval(enemyMovementRow, 250); // 500 milliseconds (half a second)
   }
   
 timeStuff()
