@@ -15,6 +15,11 @@ let gameStartState = {
     firingTaser: false,
     turnsTilTaserActive: 0,
     taserTiles: 2,
+
+    firingLaser: false,
+    turnsTilLaserActive: 0,
+    laserTiles: 1,
+
     stateIsSetUp: false,
     exitPosition: 100,
 
@@ -56,13 +61,22 @@ async function renderTopBarStats(stateObj) {
     let taserDiv = document.createElement("Div")
     let taserText = ``
     if (stateObj.turnsTilTaserActive === 0) {
-        taserText = "Taser Ready"
+        taserText = "Taser Ready - Press T"
     } else {
         taserText = `Taser Recharging: ` + Math.round(((16-stateObj.turnsTilTaserActive)/16)*100, 2) + "%"
     }
     taserDiv.textContent = taserText;
 
-    topBarDiv.append(cashDiv, taserDiv)
+    let laserDiv = document.createElement("Div")
+    let laserText = ``
+    if (stateObj.turnsTilLaserActive === 0) {
+        laserText = "Laser Ready - Press L"
+    } else {
+        laserText = `Laser Recharging: ` + Math.round(((24-stateObj.turnsTilLaserActive)/24)*100, 2) + "%"
+    }
+    laserDiv.textContent = laserText;
+
+    topBarDiv.append(cashDiv, laserDiv, taserDiv)
     return topBarDiv
 }
 
@@ -195,6 +209,11 @@ document.addEventListener('keydown', async function(event) {
             stateObj = await fireTaser(stateObj);
             await changeState(stateObj)
             //await checkForDeath(stateObj)
+          } else if (event.key === 'l') {
+            // Execute your function for the right arrow key
+            stateObj = await fireLaser(stateObj);
+            await changeState(stateObj)
+            //await checkForDeath(stateObj)
           }
     //}
   });
@@ -276,11 +295,52 @@ async function fireTaser(stateObj) {
             if ((stateObj.currentPosition +t) % screenwidth !== 0) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
                     if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
-                        stateObj.enemies[e].stunned += 16;
                         stateObj = immer.produce(stateObj, (newState) => {
                             newState.enemies[e].stunned += 16;
                             newState.firingTaser = true
                             newState.turnsTilTaserActive += 16;
+                        })
+                    }
+                }
+            }
+        }
+    }
+    return stateObj
+}
+
+async function fireLaser(stateObj) {
+    console.log("firing laser")
+    if (stateObj.turnsTilLaserActive === 0) {
+        
+        //if not on leftmost square 
+        for (t=0; t < stateObj.laserTiles; t++) {
+            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
+                console.log("not on side")
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1-t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            console.log("deleting enemy")
+                            newState.enemies.splice(e, 1)
+                            newState.firingLaser = true
+                            newState.turnsTilLaserActive += 24;
+                        })
+                        
+                    }
+                }    
+            }
+
+        }  
+        
+        //if not on rightmost
+        for (t=0; t < stateObj.laserTiles; t++) {
+            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            console.log("deleting enemy")
+                            newState.enemies.splice(e, 1)
+                            newState.firingLaser = true
+                            newState.turnsTilLaserActive += 24;
                         })
                     }
                 }
@@ -392,6 +452,10 @@ async function enemyMovementRow() {
             if (newState.turnsTilTaserActive > 0) {
                 newState.turnsTilTaserActive -= 1;
             }
+
+            if (newState.turnsTilLaserActive > 0) {
+                newState.turnsTilLaserActive -= 1;
+            }
             newState.intervalNumber += 1;
 
        
@@ -416,7 +480,7 @@ async function enemyMovementRow() {
 }
 
 function timeStuff() {
-    setInterval(enemyMovementRow, 350); // 500 milliseconds (half a second)
+    setInterval(enemyMovementRow, 400); // 500 milliseconds (half a second)
   }
   
 timeStuff()
