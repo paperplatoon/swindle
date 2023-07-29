@@ -84,8 +84,8 @@ let testLayout2 = {
         enemyType: "patrol",
     },
     {
-        enemyPosition: 10,
-        direction: "left",
+        enemyPosition: (16*7)-5,
+        direction: "right",
         leftmostSquare: (16*2),
         rightMostSquare: (16*3)-1,
         interval: 1,
@@ -110,7 +110,7 @@ let testLayout2 = {
     walls: [2, 16+2, (16*2)+2, (16*3)+2,
             16*3 + 4, 16*3 + 5, 16*3 + 6, 16*3 + 7, 16*3 + 8, 16*3 + 9, 16*3 + 10,],
 
-    currentPosition: (16*7)-1,
+    currentPosition: (16*6)-2,
     exitPosition: (16*3)-1,  
     screenwidth: 16,
     mapSize: 16*7,
