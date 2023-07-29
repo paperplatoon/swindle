@@ -3,12 +3,11 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    padding-top: 6vh;
-    padding: 2vh 0.5vw;
-    height: 40vh;
+    align-items: flex-start;
+    padding-top: 10vh;
+    height: 70vh;
     width: 90vw;
-    margin-top: 20vh;
+    margin: 2vh 2vw;
   }
 
   .top-stats-bar {
@@ -27,8 +26,8 @@
 
   .map-square {
     display: flex;
-    width: 5.5vw;
-    height: 20vh;
+    width: 5.3vw;
+    height: 10vh;
     font-size: 3vh;
     transition: background-color 1500ms ease-out;
     border: 0.5px solid rgba(97, 48, 0, 0.756);
@@ -36,8 +35,47 @@
     align-items: center;
   }
 
+  .store-div {
+    background-color: grey;
+    margin-top: 10vh;
+    height: 80vh;
+    width: 70vw;
+    margin: 8vh 15vw;
+  }
+
+  .store-option {
+    height: 10vh;
+    width: 60vw;
+    background-color: brown;
+    color: white;
+    font-size: 4vh;
+  }
+
+  .store-clickable:hover {
+    background-color: rgb(78, 238, 238);
+    border: 1px dashed rgb(0, 147, 147);
+    
+    cursor: pointer;
+    font-size: 140%;
+  }
+
+  .return-to-map {
+    background-color: rgb(211, 121, 121);
+  }
+
+  .return-to-map:hover {
+    background-color: rgb(210, 81, 81);
+    border: 1px dashed rgb(0, 59, 59);
+    cursor: pointer;
+    font-size: 140%;
+  }
+
   .empty {
     background-color: black;
+  }
+
+  .wall {
+    background-color: rgb(117, 56, 6);
   }
 
   .player {
@@ -72,4 +110,24 @@
     color: red;
   }
 
+  .store-option {
+    color: rgb(0, 105, 105);
+    width: 65vw;
+    height: 5vh;
+    background-color: rgb(122, 253, 253);
+    margin: auto;
+    margin-top: 3vh;
+    padding-top: 2vh;
+    justify-content: center;
+    display: flex;
+    transition: 0.2s all;
+  }
+
+  .store-clickable:hover {
+    background-color: rgb(78, 238, 238);
+    border: 1px dashed rgb(0, 147, 147);
+    
+    cursor: pointer;
+    font-size: 140%;
+  }
  
