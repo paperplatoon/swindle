@@ -108,10 +108,17 @@ async function renderScreen(stateObj) {
             }
 
             if (stateObj.enemies[i].visionCone > 0) {
+                let modifiedVisionCone = stateObj.enemies[i].visionCone
                 
                 if (stateObj.enemies[i].direction === "left") {
+                    for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
+                        if (stateObj.gameMap[stateObj.enemies[i].enemyPosition - m - 1] === "wall") {
+                            console.log("modifying vision cone to " + m)
+                            modifiedVisionCone = m
+                        }
+                    }
                     
-                    for ( let v = 1; v < stateObj.enemies[i].visionCone+1; v++) { 
+                    for ( let v = 1; v < modifiedVisionCone+1; v++) { 
 
                         //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                         if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
@@ -121,7 +128,6 @@ async function renderScreen(stateObj) {
                                 }
                                 
                             }
-                            
 
                             if (stateObj.currentPosition === squareIndex) {
                                 loseTheGame("hit by left-moving enemy!")
