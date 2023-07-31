@@ -1,5 +1,5 @@
-let screenwidth = 16;
-let mapSize = screenwidth*7
+let screenwidth = 22;
+let mapSize = screenwidth*12
 console.log("start hi")
 
 let gameStartState = {
@@ -156,6 +156,7 @@ async function renderScreen(stateObj) {
                             if (stateObj.gameMap[stateObj.enemies[i].enemyPosition - m - 1] === "wall") {
                                 console.log("modifying vision cone to " + m)
                                 modifiedVisionCone = m
+                                break;
                             }
                         }
                         
@@ -178,6 +179,7 @@ async function renderScreen(stateObj) {
                                 if (stateObj.gameMap[stateObj.enemies[i].enemyPosition + m + 1] === "wall") {
                                     console.log("modifying vision cone to " + m)
                                     modifiedVisionCone = m
+                                    break;
                                 }
                             }
                             
@@ -466,13 +468,22 @@ async function enemyMovementRow() {
                                 if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare || newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
                                     newState.enemies[i].direction = "right";  
                                 } else {
-                                    newState.enemies[i].enemyPosition -= 1
+                                    if (newState.enemies[i].enemyPosition % screenwidth ===0) {
+                                        newState.enemies[i].direction = "right";  
+                                    } else {
+                                        newState.enemies[i].enemyPosition -= 1
+                                    }
+                                    
                                 }
                             } else {
                                 if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare|| newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
                                     newState.enemies[i].direction = "left";  
                                 } else {
-                                    newState.enemies[i].enemyPosition += 1
+                                    if ((newState.enemies[i].enemyPosition+1) % screenwidth ===0) {
+                                        newState.enemies[i].direction = "left";  
+                                    } else {
+                                        newState.enemies[i].enemyPosition += 1
+                                    }
                                 }
                             }
                         }

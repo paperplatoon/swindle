@@ -5,8 +5,8 @@
     justify-content: center;
     align-items: flex-start;
     padding-top: 10vh;
-    height: 70vh;
-    width: 90vw;
+    height: 80vh;
+    width: 95vw;
     margin: 2vh 2vw;
   }
 
@@ -26,11 +26,11 @@
 
   .map-square {
     display: flex;
-    width: 5.3vw;
-    height: 10vh;
+    width: 4.2vw;
+    height: 6.55vh;
     font-size: 3vh;
     transition: background-color 1500ms ease-out;
-    border: 0.5px solid rgba(97, 48, 0, 0.756);
+    border: 0.1px solid rgba(146, 146, 146, 0.756);
     justify-content: center;
     align-items: center;
   }
