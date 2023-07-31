@@ -143,6 +143,8 @@ async function renderScreen(stateObj) {
                 mapSquareDiv.classList.add("wall")
             } else if (mapSquare === "window") {
                 mapSquareDiv.classList.add("window")
+            } else if (mapSquare === "broken-window") {
+                mapSquareDiv.classList.add("broken-window")
             }
             for (let i=0; i <stateObj.enemies.length; i ++) {
                 if (stateObj.enemies[i].currentPosition === squareIndex) {
@@ -366,6 +368,11 @@ async function fireTaser(stateObj) {
                 }
                 if (stateObj.gameMap[stateObj.currentPosition-t] === "window" )    {
                     console.log("hit window with taser")
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.gameMap[newState.currentPosition-t] = "broken-window"
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += newState.taserDelay;
+                    })
                 }
             }
 
@@ -384,6 +391,11 @@ async function fireTaser(stateObj) {
                 }
                 if (stateObj.gameMap[stateObj.currentPosition+t] === "window" )    {
                     console.log("hit window with taser")
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.gameMap[newState.currentPosition+t] = "broken-window"
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += newState.taserDelay;
+                    })
                 }
             }
         }
@@ -483,19 +495,7 @@ async function upgradeTaserStunLength(stateObj) {
     await changeState(stateObj)
 }
 
-async function checkIfPatrolEnemyCanMove(stateObj, enemyIndex, squaresToMove) {
-    if (stateObj.enemies[enemyIndex].direction === "left") {
-        if (newState.enemies[i].currentPosition % screenwidth ===0) {
-            return false
-        } else if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition-squaresToMove] === "wall") {
-            return false
-        } else if (stateObj.enemies[enemyIndex].currentPosition === stateObj.enemies[enemyIndex].leftmostSquare) {
-            return false
-        } else {
-            return true
-        }
-    }
-}
+
 async function enemyMovementRow() {
         let stateObj = {...state}
 
@@ -519,7 +519,7 @@ async function enemyMovementRow() {
                                 }
                             }
                         }
-                        
+
                     } else if (stateObj.enemies[i].enemyType === "border" ) {
                         if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                             if (newState.enemies[i].direction === "left") {

@@ -78,6 +78,13 @@
     background-color: rgb(117, 56, 6);
   }
 
+  .window {
+    background-color: silver;
+  }
+.broken-window {
+  background-color: green;
+}
+
   .player {
     background-color: blue;
   }
@@ -123,9 +130,6 @@
     transition: 0.2s all;
   }
 
-  .window {
-    background-color: silver;
-  }
 
   .store-clickable:hover {
     background-color: rgb(78, 238, 238);
