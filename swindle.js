@@ -74,38 +74,7 @@ async function changeState(newStateObj) {
 state = {...gameStartState}
 
 
-async function renderTopBarStats(stateObj) {
-    let topBarDiv = document.createElement("Div")
-    topBarDiv.classList.add("top-stats-bar")
-    let cashDiv = document.createElement("Div")
-    cashDiv.textContent = "Banked Cash: $" + stateObj.bankedCash;
 
-    let currentHeistDiv = document.createElement("Div")
-    if (stateObj.inStore === false) {
-        currentHeistDiv.textContent = "Current Heist $" + stateObj.currentHeistCash;
-    }
-    
-    let taserDiv = document.createElement("Div")
-    let taserText = ``
-    if (stateObj.turnsTilTaserActive === 0) {
-        taserText = "Taser Ready - Press T"
-    } else {
-        taserText = `Taser Recharging: ` + Math.round(((stateObj.taserDelay-stateObj.turnsTilTaserActive)/stateObj.taserDelay)*100, 2) + "%"
-    }
-    taserDiv.textContent = taserText;
-
-    let laserDiv = document.createElement("Div")
-    let laserText = ``
-    if (stateObj.turnsTilLaserActive === 0) {
-        laserText = "Laser Ready - Press L"
-    } else {
-        laserText = `Laser Recharging: ` + Math.round(((stateObj.laserDelay-stateObj.turnsTilLaserActive)/stateObj.laserDelay)*100, 2) + "%"
-    }
-    laserDiv.textContent = laserText;
-
-    topBarDiv.append(cashDiv, currentHeistDiv, laserDiv, taserDiv)
-    return topBarDiv
-}
 
 async function renderScreen(stateObj) {
  
@@ -117,7 +86,7 @@ async function renderScreen(stateObj) {
     } else {
         if (stateObj.stateIsSetUp === false) {
             console.log("triggering set up state")
-            stateObj = await setUpState(stateObj, testLayout3);
+            stateObj = await setUpState(stateObj, testLayout4);
         }
         document.getElementById("app").innerHTML = ""
         //create a mapDiv to append all your new squares to
@@ -150,12 +119,7 @@ async function renderScreen(stateObj) {
                     let modifiedVisionCone = stateObj.enemies[i].visionCone
                     
                     if (stateObj.enemies[i].direction === "left") {
-                        for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                            if (stateObj.gameMap[stateObj.enemies[i].currentPosition - m - 1] === "wall") {
-                                modifiedVisionCone = m
-                                break;
-                            }
-                        }
+                        modifiedVisionCone = modifyVisionCone(stateObj, i , "left")
                         for ( let v = 1; v < modifiedVisionCone+1; v++) { 
                             //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                             if (squareIndex === (stateObj.enemies[i].currentPosition - v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
@@ -166,12 +130,7 @@ async function renderScreen(stateObj) {
                                 }
                             }
                     } else if (stateObj.enemies[i].direction === "up") {
-                        for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                            if (stateObj.gameMap[stateObj.enemies[i].currentPosition - ((m+1) * screenwidth)] === "wall") {
-                                modifiedVisionCone = m
-                                break;
-                            }
-                        }
+                        modifiedVisionCone = modifyVisionCone(stateObj, i , "up")
                         for ( let v = 1; v < modifiedVisionCone+1; v++) { 
                             //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                             if (squareIndex === (stateObj.enemies[i].currentPosition - (v*screenwidth))){
@@ -182,12 +141,7 @@ async function renderScreen(stateObj) {
                                 }
                             }
                     }  else if (stateObj.enemies[i].direction === "down") {
-                        for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                            if (stateObj.gameMap[stateObj.enemies[i].currentPosition + ((m+1) * screenwidth)] === "wall") {
-                                modifiedVisionCone = m
-                                break;
-                            }
-                        }
+                        modifiedVisionCone = modifyVisionCone(stateObj, i , "down")
                         for ( let v = 1; v < modifiedVisionCone+1; v++) { 
                             //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                             if (squareIndex === (stateObj.enemies[i].currentPosition + (v*screenwidth))){
@@ -198,12 +152,7 @@ async function renderScreen(stateObj) {
                                 }
                             }
                     } else if (stateObj.enemies[i].direction === "right"){
-                            for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                                if (stateObj.gameMap[stateObj.enemies[i].currentPosition + m + 1] === "wall") {
-                                    modifiedVisionCone = m
-                                    break;
-                                }
-                            }
+                        modifiedVisionCone = modifyVisionCone(stateObj, i , "right")
                             for ( let v = 1; v < modifiedVisionCone+1; v++) { 
                                 //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                                 if (squareIndex === (stateObj.enemies[i].currentPosition + v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)- v)) ){
@@ -387,99 +336,6 @@ async function loseTheGame(textString) {
     }
 }
 
-async function fireTaser(stateObj) {
-    if (stateObj.turnsTilTaserActive === 0) {
-        //if not on leftmost square 
-        for (t=0; t < stateObj.taserTiles; t++) {
-            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
-                for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
-                        stateObj = immer.produce(stateObj, (newState) => {
-                            newState.enemies[e].stunned += newState.stunLength;
-                            newState.firingTaser = true
-                            newState.turnsTilTaserActive += newState.taserDelay;
-                        })
-                        
-                    }
-                }
-                if (stateObj.gameMap[stateObj.currentPosition-t] === "window" )    {
-                    console.log("hit window with taser")
-                    stateObj = immer.produce(stateObj, (newState) => {
-                        newState.gameMap[newState.currentPosition-t] = "broken-window"
-                        newState.firingTaser = true
-                        newState.turnsTilTaserActive += newState.taserDelay;
-                    })
-                }
-            }
-
-        }  
-        //if not on rightmost
-        for (t=0; t < stateObj.taserTiles; t++) {
-            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
-                for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
-                        stateObj = immer.produce(stateObj, (newState) => {
-                            newState.enemies[e].stunned += newState.stunLength;
-                            newState.firingTaser = true
-                            newState.turnsTilTaserActive += newState.taserDelay;
-                        })
-                    }
-                }
-                if (stateObj.gameMap[stateObj.currentPosition+t] === "window" )    {
-                    console.log("hit window with taser")
-                    stateObj = immer.produce(stateObj, (newState) => {
-                        newState.gameMap[newState.currentPosition+t] = "broken-window"
-                        newState.firingTaser = true
-                        newState.turnsTilTaserActive += newState.taserDelay;
-                    })
-                }
-            }
-        }
-    }
-    return stateObj
-}
-
-async function fireLaser(stateObj) {
-    console.log("firing laser")
-    if (stateObj.turnsTilLaserActive === 0) {
-        
-        //if not on leftmost square 
-        for (t=0; t < stateObj.laserTiles; t++) {
-            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
-                console.log("not on side")
-                for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
-                        stateObj = immer.produce(stateObj, (newState) => {
-                            console.log("deleting enemy")
-                            newState.enemies.splice(e, 1)
-                            newState.firingLaser = true
-                            newState.turnsTilLaserActive += newState.laserDelay;
-                        })
-                        
-                    }
-                }    
-            }
-
-        }  
-        
-        //if not on rightmost
-        for (t=0; t < stateObj.laserTiles; t++) {
-            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
-                for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
-                        stateObj = immer.produce(stateObj, (newState) => {
-                            console.log("deleting enemy")
-                            newState.enemies.splice(e, 1)
-                            newState.firingLaser = true
-                            newState.turnsTilLaserActive += newState.laserDelay;
-                        })
-                    }
-                }
-            }
-        }
-    }
-    return stateObj
-}
 
 function makeStoreOptionDiv(stateObj, textForDiv, functionToAdd, cashMinimum, className=false) {
     let storeOptionDiv = document.createElement("Div")
@@ -697,3 +553,254 @@ function timeStuff() {
   
 changeState(state)
 timeStuff()
+
+
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+
+function modifyVisionCone(stateObj, enemyIndex, enemyDirection) {
+    let visionConeToModify = stateObj.enemies[enemyIndex].visionCone
+
+    if (enemyDirection === "left") {
+        for (m = 0; m < visionConeToModify; m++) {
+            if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition - m - 1] === "wall") {
+                visionConeToModify = m
+                break;
+            }
+        }
+    } else if  (enemyDirection === "right") {
+        for (m = 0; m < visionConeToModify; m++) {
+            if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition + m + 1] === "wall") {
+                visionConeToModify = m
+                break;
+            }
+        }
+    } else if  (enemyDirection === "up") {
+        for (m = 0; m < visionConeToModify; m++) {
+            if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition - ((m+1) * screenwidth)] === "wall") {
+                visionConeToModify = m
+                break;
+            }
+        }
+    } else if  (enemyDirection === "down") {
+        for (m = 0; m < visionConeToModify; m++) {
+            if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition + ((m+1) * screenwidth)] === "wall") {
+                visionConeToModify = m
+                break;
+            }
+        }
+    }
+    return visionConeToModify
+}
+
+
+async function fireTaser(stateObj) {
+    if (stateObj.turnsTilTaserActive === 0) {
+        //if not on leftmost square 
+        for (t=0; t < stateObj.taserTiles; t++) {
+            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            newState.enemies[e].stunned += newState.stunLength;
+                            newState.firingTaser = true
+                            newState.turnsTilTaserActive += newState.taserDelay;
+                        })
+                        
+                    }
+                }
+                if (stateObj.gameMap[stateObj.currentPosition-t] === "window" )    {
+                    console.log("hit window with taser")
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.gameMap[newState.currentPosition-t] = "broken-window"
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += newState.taserDelay;
+                    })
+                }
+            }
+
+        }  
+        //if not on rightmost
+        for (t=0; t < stateObj.taserTiles; t++) {
+            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            newState.enemies[e].stunned += newState.stunLength;
+                            newState.firingTaser = true
+                            newState.turnsTilTaserActive += newState.taserDelay;
+                        })
+                    }
+                }
+                if (stateObj.gameMap[stateObj.currentPosition+t] === "window" )    {
+                    console.log("hit window with taser")
+                    stateObj = immer.produce(stateObj, (newState) => {
+                        newState.gameMap[newState.currentPosition+t] = "broken-window"
+                        newState.firingTaser = true
+                        newState.turnsTilTaserActive += newState.taserDelay;
+                    })
+                }
+            }
+        }
+    }
+    return stateObj
+}
+
+async function fireLaser(stateObj) {
+    console.log("firing laser")
+    if (stateObj.turnsTilLaserActive === 0) {
+        
+        //if not on leftmost square 
+        for (t=0; t < stateObj.laserTiles; t++) {
+            if ((stateObj.currentPosition-t) % screenwidth !== 0) {
+                console.log("not on side")
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            console.log("deleting enemy")
+                            newState.enemies.splice(e, 1)
+                            newState.firingLaser = true
+                            newState.turnsTilLaserActive += newState.laserDelay;
+                        })
+                        
+                    }
+                }    
+            }
+
+        }  
+        
+        //if not on rightmost
+        for (t=0; t < stateObj.laserTiles; t++) {
+            if ((stateObj.currentPosition +t) % screenwidth !== 0) {
+                for (let e=0; e <stateObj.enemies.length; e++) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
+                        stateObj = immer.produce(stateObj, (newState) => {
+                            console.log("deleting enemy")
+                            newState.enemies.splice(e, 1)
+                            newState.firingLaser = true
+                            newState.turnsTilLaserActive += newState.laserDelay;
+                        })
+                    }
+                }
+            }
+        }
+    }
+    return stateObj
+}
+
+async function renderTopBarStats(stateObj) {
+    let topBarDiv = document.createElement("Div")
+    topBarDiv.classList.add("top-stats-bar")
+    let cashDiv = document.createElement("Div")
+    cashDiv.textContent = "Banked Cash: $" + stateObj.bankedCash;
+
+    let currentHeistDiv = document.createElement("Div")
+    if (stateObj.inStore === false) {
+        currentHeistDiv.textContent = "Current Heist $" + stateObj.currentHeistCash;
+    }
+    
+    let taserDiv = document.createElement("Div")
+    let taserText = ``
+    if (stateObj.turnsTilTaserActive === 0) {
+        taserText = "Taser Ready - Press T"
+    } else {
+        taserText = `Taser Recharging: ` + Math.round(((stateObj.taserDelay-stateObj.turnsTilTaserActive)/stateObj.taserDelay)*100, 2) + "%"
+    }
+    taserDiv.textContent = taserText;
+
+    let laserDiv = document.createElement("Div")
+    let laserText = ``
+    if (stateObj.turnsTilLaserActive === 0) {
+        laserText = "Laser Ready - Press L"
+    } else {
+        laserText = `Laser Recharging: ` + Math.round(((stateObj.laserDelay-stateObj.turnsTilLaserActive)/stateObj.laserDelay)*100, 2) + "%"
+    }
+    laserDiv.textContent = laserText;
+
+    topBarDiv.append(cashDiv, currentHeistDiv, laserDiv, taserDiv)
+    return topBarDiv
+}

@@ -226,6 +226,15 @@ let testLayout4 = {
             enemyType: "patrol",
             patrolBuffer: 0,
         },
+        {
+            currentPosition: 22+18,
+            direction: "down",
+            interval: 1,
+            visionCone: 4,
+            stunned: 0,
+            enemyType: "camera",
+            patrolBuffer: 0,
+        },
     ],
 
     computers: [
