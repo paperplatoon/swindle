@@ -1,5 +1,5 @@
-let screenwidth = 16;
-let mapSize = screenwidth*7
+let screenwidth = 22;
+let mapSize = screenwidth*12
 console.log("start hi")
 
 let gameStartState = {
@@ -7,7 +7,8 @@ let gameStartState = {
 
     currentPosition: 0,
     computers: [],
-    currentCash: 200,
+    bankedCash: 200,
+    currentHeistCash: 0,
 
     enemies: [],
 
@@ -59,6 +60,7 @@ async function setUpState(stateObj, layoutObj) {
       newState.screenwidth = layoutObj.screenwidth
       newState.mapSize = layoutObj.mapRows * layoutObj.screenwidth
       newState.gameMap = layoutObj.mapArray
+      newState.currentHeistCash = 0;
 
       for (let c=0; c < newState.computers.length; c ++) {
         newState.computers[c].currentFunds += newState.extraComputerCash
@@ -80,8 +82,13 @@ async function renderTopBarStats(stateObj) {
     let topBarDiv = document.createElement("Div")
     topBarDiv.classList.add("top-stats-bar")
     let cashDiv = document.createElement("Div")
-    cashDiv.textContent = "Cash: " + stateObj.currentCash;
+    cashDiv.textContent = "Banked Cash: $" + stateObj.bankedCash;
 
+    let currentHeistDiv = document.createElement("Div")
+    if (stateObj.inStore === false) {
+        currentHeistDiv.textContent = "Current Heist $" + stateObj.currentHeistCash;
+    }
+    
     let taserDiv = document.createElement("Div")
     let taserText = ``
     if (stateObj.turnsTilTaserActive === 0) {
@@ -100,12 +107,11 @@ async function renderTopBarStats(stateObj) {
     }
     laserDiv.textContent = laserText;
 
-    topBarDiv.append(cashDiv, laserDiv, taserDiv)
+    topBarDiv.append(cashDiv, currentHeistDiv, laserDiv, taserDiv)
     return topBarDiv
 }
 
 async function renderScreen(stateObj) {
-    console.log("rendering screen")
     
 
     if (stateObj.inStore === true) {
@@ -116,7 +122,7 @@ async function renderScreen(stateObj) {
     } else {
         if (stateObj.stateIsSetUp === false) {
             console.log("triggering set up state")
-            stateObj = await setUpState(stateObj, testLayout2);
+            stateObj = await setUpState(stateObj, testLayout3);
         }
         document.getElementById("app").innerHTML = ""
         //create a mapDiv to append all your new squares to
@@ -135,6 +141,8 @@ async function renderScreen(stateObj) {
                 mapSquareDiv.classList.add("empty")
             } else if (mapSquare === "wall") {
                 mapSquareDiv.classList.add("wall")
+            } else if (mapSquare === "window") {
+                mapSquareDiv.classList.add("window")
             }
             for (let i=0; i <stateObj.enemies.length; i ++) {
                 if (stateObj.enemies[i].enemyPosition === squareIndex) {
@@ -147,8 +155,8 @@ async function renderScreen(stateObj) {
                     if (stateObj.enemies[i].direction === "left") {
                         for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
                             if (stateObj.gameMap[stateObj.enemies[i].enemyPosition - m - 1] === "wall") {
-                                console.log("modifying vision cone to " + m)
                                 modifiedVisionCone = m
+                                break;
                             }
                         }
                         
@@ -169,8 +177,8 @@ async function renderScreen(stateObj) {
                         if (stateObj.enemies[i].direction === "right") {
                             for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
                                 if (stateObj.gameMap[stateObj.enemies[i].enemyPosition + m + 1] === "wall") {
-                                    console.log("modifying vision cone to " + m)
                                     modifiedVisionCone = m
+                                    break;
                                 }
                             }
                             
@@ -331,11 +339,13 @@ async function fireTaser(stateObj) {
                         })
                         
                     }
-                }    
+                }
+                if (stateObj.gameMap[stateObj.currentPosition-t] === "window" )    {
+                    console.log("hit window with taser")
+                }
             }
 
         }  
-        
         //if not on rightmost
         for (t=0; t < stateObj.taserTiles; t++) {
             if ((stateObj.currentPosition +t) % screenwidth !== 0) {
@@ -347,6 +357,9 @@ async function fireTaser(stateObj) {
                             newState.turnsTilTaserActive += newState.taserDelay;
                         })
                     }
+                }
+                if (stateObj.gameMap[stateObj.currentPosition+t] === "window" )    {
+                    console.log("hit window with taser")
                 }
             }
         }
@@ -410,7 +423,7 @@ async function renderStore(stateObj) {
     taserStunLengthUpgradeDiv.classList.add("store-option")
     taserStunLengthUpgradeDiv.classList.add("taser-stun-length")
     taserStunLengthUpgradeDiv.textContent = "Taser Stun Length Upgrade: " + stateObj.taserStunLengthUpgradeCost + " gold" //
-        if (stateObj.currentCash >= stateObj.taserStunLengthUpgradeCost) {
+        if (stateObj.bankedCash >= stateObj.taserStunLengthUpgradeCost) {
             taserStunLengthUpgradeDiv.classList.add("store-clickable")
             taserStunLengthUpgradeDiv.onclick = function () {
                 upgradeTaserStunLength(stateObj)
@@ -438,12 +451,26 @@ async function leaveStore(stateObj) {
 async function upgradeTaserStunLength(stateObj) {
     console.log("stun length was " + stateObj.stunLength)
     stateObj = immer.produce(stateObj, (newState) => {
-        newState.currentCash -= newState.taserStunLengthUpgradeCost;
+        newState.currentHeistCash -= newState.taserStunLengthUpgradeCost;
         newState.stunLength += 8;
         newState.taserStunLengthUpgradeCost += 50;
     })
     console.log("stun length is now " + stateObj.stunLength)
     await changeState(stateObj)
+}
+
+async function checkIfPatrolEnemyCanMove(stateObj, enemyIndex, squaresToMove) {
+    if (stateObj.enemies[enemyIndex].direction === "left") {
+        if (newState.enemies[i].enemyPosition % screenwidth ===0) {
+            return false
+        } else if (stateObj.gameMap[stateObj.enemies[enemyIndex].enemyPosition-squaresToMove] === "wall") {
+            return false
+        } else if (stateObj.enemies[enemyIndex].enemyPosition === stateObj.enemies[enemyIndex].leftmostSquare) {
+            return false
+        } else {
+            return true
+        }
+    }
 }
 
 async function enemyMovementRow() {
@@ -459,13 +486,22 @@ async function enemyMovementRow() {
                                 if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare || newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
                                     newState.enemies[i].direction = "right";  
                                 } else {
-                                    newState.enemies[i].enemyPosition -= 1
+                                    if (newState.enemies[i].enemyPosition % screenwidth ===0) {
+                                        newState.enemies[i].direction = "right";  
+                                    } else {
+                                        newState.enemies[i].enemyPosition -= 1
+                                    }
+                                    
                                 }
                             } else {
                                 if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare|| newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
                                     newState.enemies[i].direction = "left";  
                                 } else {
-                                    newState.enemies[i].enemyPosition += 1
+                                    if ((newState.enemies[i].enemyPosition+1) % screenwidth ===0) {
+                                        newState.enemies[i].direction = "left";  
+                                    } else {
+                                        newState.enemies[i].enemyPosition += 1
+                                    }
                                 }
                             }
                         }
@@ -475,7 +511,7 @@ async function enemyMovementRow() {
                                 //if left and on leftmost square, go down
                                 if (newState.enemies[i].enemyPosition % screenwidth ===0 ) {
                                     newState.enemies[i].direction = "down"; 
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
+                                } else if (newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall" || newState.gameMap[newState.enemies[i].enemyPosition-1] === "window") { 
                                     newState.enemies[i].direction = "down"; 
                                 } else if (newState.enemies[i].enemyPosition > screenwidth-1 && newState.gameMap[newState.enemies[i].enemyPosition - screenwidth+1] === "wall") {
                                         newState.enemies[i].direction = "up";  
@@ -485,7 +521,7 @@ async function enemyMovementRow() {
                             } else if (newState.enemies[i].direction === "down") {
                                 if (newState.enemies[i].enemyPosition >= mapSize-screenwidth) {
                                     newState.enemies[i].direction = "right"; 
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "wall") {
+                                } else if (newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "wall" || newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "window") {
                                     newState.enemies[i].direction = "right"; 
                                 } else if (newState.enemies[i].enemyPosition % screenwidth !==0) {
                                     if (newState.gameMap[newState.enemies[i].enemyPosition - 1] === "empty"  && newState.gameMap[newState.enemies[i].enemyPosition + screenwidth - 1] !== "wall") {
@@ -497,9 +533,7 @@ async function enemyMovementRow() {
                                     newState.enemies[i].enemyPosition += screenwidth
                                 }
                             } else if (newState.enemies[i].direction === "right") {
-                                console.log("enemy position is " + newState.enemies[i].enemyPosition)
                                 if ((newState.enemies[i].enemyPosition+1) % screenwidth ===0 ) {
-                                    console.log("basic up trigger")
                                     newState.enemies[i].direction = "up"; 
                                 } else if (newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
                                     newState.enemies[i].direction = "up"; 
@@ -514,15 +548,12 @@ async function enemyMovementRow() {
                                 } else if (newState.gameMap[newState.enemies[i].enemyPosition - screenwidth] === "wall") {
                                     newState.enemies[i].direction = "left"; 
                                 } else if (newState.enemies[i].enemyPosition < mapSize-screenwidth) {
-                                    console.log("outside")
                                     if (newState.gameMap[newState.enemies[i].enemyPosition +screenwidth + 1] === "wall" && newState.gameMap[newState.enemies[i].enemyPosition + 1] !== "wall") {
-                                        console.log("weird condition")
                                         newState.enemies[i].direction = "right";
                                     } else {
                                         newState.enemies[i].enemyPosition -= screenwidth
                                     }
                                 } else {
-                                    console.log("else up")
                                     newState.enemies[i].enemyPosition -= screenwidth
                                 }
                             }
@@ -534,10 +565,10 @@ async function enemyMovementRow() {
                 for (let i = 0; i < newState.computers.length; i++) {
                     if (newState.currentPosition === newState.computers[i].computerPosition && newState.computers[i].currentFunds > 0) {
                         if (newState.computers[i].currentFunds > 1+newState.siphonSpeed) {
-                            newState.currentCash += (1 +newState.siphonSpeed);
+                            newState.currentHeistCash += (1 +newState.siphonSpeed);
                             newState.computers[i].currentFunds -= (1 +newState.siphonSpeed)    
                         } else {
-                            newState.currentCash += newState.computers[i].currentFunds
+                            newState.currentHeistCash += newState.computers[i].currentFunds
                             newState.computers[i].currentFunds = 0 
                         }
                         
@@ -573,9 +604,10 @@ async function enemyMovementRow() {
         }
     
         if (stateObj.currentPosition === stateObj.exitPosition ) {
-            let winString = `You escaped with $` + stateObj.currentCash + ` in loot`
+            let winString = `You escaped with $` + stateObj.currentHeistCash + ` in loot`
             stateObj = immer.produce(stateObj, (newState) => {
-                newState.currentCash += newState.extraHeistCash;
+                newState.bankedCash += newState.currentHeistCash + newState.extraHeistCash;
+                newState.currentHeistCash = 0;
                 winString += ` and $` + newState.extraHeistCash + ` worth of intel to sell`
             })
             winString += `!`

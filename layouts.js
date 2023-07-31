@@ -5,45 +5,45 @@ let testLayoutArray =  ["empty", "empty", "empty", "empty", "empty", "empty", "e
 "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty",
 "empty", "empty", "wall", "empty", "empty", "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty",
 "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-]
+];
 
 let testLayout2 = {
     enemies: [
     {
-        enemyPosition: (16*3) - 2,
+        enemyPosition: (22*3) - 2,
         direction: "right",
-        leftmostSquare: (16*2),
-        rightMostSquare: (16*3)-1,
+        leftmostSquare: (22*2),
+        rightMostSquare: (22*3)-1,
         interval: 1,
         visionCone: 3,
         stunned: 0,
         enemyType: "patrol",
     },
     {
-        enemyPosition: (16*3) + 10,
+        enemyPosition: (22*3) + 10,
         direction: "left",
-        leftmostSquare: (16*3) + 2,
-        rightMostSquare: (16*4)-3,
+        leftmostSquare: (22*3) + 2,
+        rightMostSquare: (22*4)-3,
         interval: 2,
         visionCone: 3,
         stunned: 0,
         enemyType: "patrol",
     },
     {
-        enemyPosition: (16*4) + 4,
+        enemyPosition: (22*4) + 4,
         direction: "right",
-        leftmostSquare: (16*4) + 2,
-        rightMostSquare: (16*5)-2,
+        leftmostSquare: (22*4) + 2,
+        rightMostSquare: (22*5)-2,
         interval: 2,
         visionCone: 2,
         stunned: 0,
         enemyType: "patrol",
     },
     {
-        enemyPosition: (16*7)-5,
+        enemyPosition: (22*7)-5,
         direction: "right",
-        leftmostSquare: (16*2),
-        rightMostSquare: (16*3)-1,
+        leftmostSquare: (22*2),
+        rightMostSquare: (2*3)-1,
         interval: 1,
         visionCone: 0,
         stunned: 0,
@@ -54,25 +54,105 @@ let testLayout2 = {
 
     computers: [
         {
-            computerPosition: (16*3)+4,
+            computerPosition: (22*3)+4,
             currentFunds: 15
         },
         {
-            computerPosition: (16*4) - 1,
+            computerPosition: (22*4) - 1,
             currentFunds: 20
         }
     ],
 
-    walls: [2, 16+2, (16*2)+2, (16*3)+2,
-            16*3 + 4, 16*3 + 5, 16*3 + 6, 16*3 + 7, 16*3 + 8, 16*3 + 9, 16*3 + 10,],
-
     currentPosition: 0,
-    exitPosition: (16*6)-2,  
-    screenwidth: 16,
-    mapSize: 16*7,
-    mapRows: 7,
+    exitPosition: (22*6)-2,  
+    screenwidth: 22,
+    mapSize: 22*12,
+    mapRows: 12,
     blankRows: 0,
     mapArray: testLayoutArray
+}
+
+
+
+
+let testLayout3Array =  
+["empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty",
+"empty", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty", "wall", "wall", "wall", "wall", "wall", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "window", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "wall", "empty",
+"empty", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "empty",
+"empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty",
+];
+
+let testLayout3 = {
+    enemies: [
+        {
+            enemyPosition: (22*7) + 12,
+            direction: "left",
+            leftmostSquare: 22,
+            rightMostSquare: (22*9)-2,
+            interval: 2,
+            visionCone: 0,
+            stunned: 0,
+            enemyType: "patrol",
+        },
+        {
+            enemyPosition: (22*3) - 4,
+            direction: "right",
+            leftmostSquare: (22*2),
+            rightMostSquare: (22*3)-1,
+            interval: 1,
+            visionCone: 0,
+            stunned: 0,
+            enemyType: "patrol",
+        },
+        
+        {
+            enemyPosition: (22*4) + 4,
+            direction: "right",
+            leftmostSquare: (22*4) + 2,
+            rightMostSquare: (22*5)-2,
+            interval: 1,
+            visionCone: 6,
+            stunned: 0,
+            enemyType: "patrol",
+        },
+        {
+            enemyPosition: (22*6)-4,
+            direction: "right",
+            leftmostSquare: (22*6),
+            rightMostSquare: (22*6)-1,
+            interval: 1,
+            visionCone: 0,
+            stunned: 0,
+            enemyType: "patrol",
+        },
+    ],
+
+    computers: [
+        {
+            computerPosition: (22*2)-2,
+            currentFunds: 25
+        },
+        {
+            computerPosition: (22*5) - 6,
+            currentFunds: 10
+        }
+    ],
+
+    currentPosition: 0,
+    exitPosition: 22-1,  
+    screenwidth: 22,
+    mapSize: 22*12,
+    mapRows: 12,
+    blankRows: 0,
+    mapArray: testLayout3Array
 }
 
 
