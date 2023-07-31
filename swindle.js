@@ -145,7 +145,7 @@ async function renderScreen(stateObj) {
                 mapSquareDiv.classList.add("window")
             }
             for (let i=0; i <stateObj.enemies.length; i ++) {
-                if (stateObj.enemies[i].enemyPosition === squareIndex) {
+                if (stateObj.enemies[i].currentPosition === squareIndex) {
                     mapSquareDiv.classList.add("enemy")
                 }
     
@@ -154,7 +154,7 @@ async function renderScreen(stateObj) {
                     
                     if (stateObj.enemies[i].direction === "left") {
                         for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                            if (stateObj.gameMap[stateObj.enemies[i].enemyPosition - m - 1] === "wall") {
+                            if (stateObj.gameMap[stateObj.enemies[i].currentPosition - m - 1] === "wall") {
                                 modifiedVisionCone = m
                                 break;
                             }
@@ -163,7 +163,7 @@ async function renderScreen(stateObj) {
                         for ( let v = 1; v < modifiedVisionCone+1; v++) { 
     
                             //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
-                            if (squareIndex === (stateObj.enemies[i].enemyPosition - v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
+                            if (squareIndex === (stateObj.enemies[i].currentPosition - v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
                                         mapSquareDiv.classList.add("vision-cone")
                                         if (stateObj.currentPosition === squareIndex) {
                                             loseTheGame("hit by left-moving enemy!")
@@ -176,7 +176,7 @@ async function renderScreen(stateObj) {
                     
                         if (stateObj.enemies[i].direction === "right") {
                             for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
-                                if (stateObj.gameMap[stateObj.enemies[i].enemyPosition + m + 1] === "wall") {
+                                if (stateObj.gameMap[stateObj.enemies[i].currentPosition + m + 1] === "wall") {
                                     modifiedVisionCone = m
                                     break;
                                 }
@@ -185,7 +185,7 @@ async function renderScreen(stateObj) {
                             for ( let v = 1; v < modifiedVisionCone+1; v++) { 
     
                                 //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
-                                if (squareIndex === (stateObj.enemies[i].enemyPosition + v) && (stateObj.enemies[i].enemyPosition % screenwidth  === ((squareIndex % screenwidth)- v)) ){
+                                if (squareIndex === (stateObj.enemies[i].currentPosition + v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)- v)) ){
                                     mapSquareDiv.classList.add("vision-cone")
                                     if (stateObj.currentPosition === squareIndex) {
                                         loseTheGame("hit by left-moving enemy!")
@@ -273,7 +273,7 @@ document.addEventListener('keydown', async function(event) {
   });
 
 async function LeftArrow(stateObj) {   
-    if (stateObj.currentPosition % screenwidth !== 0 && stateObj.gameMap[stateObj.currentPosition-1] !== "wall") {
+    if (checkIfCanMove(stateObj, stateObj, "left")) {
         stateObj = await calculateMoveChange(stateObj, -1)
     }
     return stateObj
@@ -295,11 +295,35 @@ async function UpArrow(stateObj) {
 
 //7, 15, 23
 async function RightArrow(stateObj) {
-    if ((stateObj.currentPosition+1) % screenwidth !== 0  && stateObj.gameMap[stateObj.currentPosition+1] !== "wall") {
-        console.log("current position " + stateObj.currentPosition)
-        stateObj = await calculateMoveChange(stateObj, 1)
+    if (checkIfCanMove(stateObj, stateObj, "right")) {
+        stateObj = await calculateMoveChange(stateObj, +1)
     }
     return stateObj
+}
+
+function checkIfCanMove(movingObj, stateObj, moveDirection) {
+    if (moveDirection === "left") {
+        if (movingObj.currentPosition % screenwidth === 0) {
+            return false;
+        } else if (stateObj.gameMap[movingObj.currentPosition-1] === "wall") {
+            return false
+        } else if (stateObj.gameMap[movingObj.currentPosition-1] === "window") {
+            return false
+        } else {
+            return true
+        }
+    } else if (moveDirection === "right") {
+        if ((movingObj.currentPosition+1) % screenwidth === 0) {
+            return false;
+        } else if (stateObj.gameMap[movingObj.currentPosition+1] === "wall") {
+            return false
+        } else if (stateObj.gameMap[movingObj.currentPosition+1] === "window") {
+            return false
+        } else {
+            return true
+        }
+    }
+    
 }
 
 async function calculateMoveChange(stateObj, squaresToMove) {
@@ -310,7 +334,7 @@ async function calculateMoveChange(stateObj, squaresToMove) {
     })
 
     for (let i = 0; i < stateObj.enemies.length; i++) {
-        if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
+        if (stateObj.enemies[i].currentPosition === stateObj.currentPosition) {
             loseTheGame("Don't move into enemies!")
         }
     }
@@ -331,7 +355,7 @@ async function fireTaser(stateObj) {
         for (t=0; t < stateObj.taserTiles; t++) {
             if ((stateObj.currentPosition-t) % screenwidth !== 0) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1-t) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
                         stateObj = immer.produce(stateObj, (newState) => {
                             newState.enemies[e].stunned += newState.stunLength;
                             newState.firingTaser = true
@@ -350,7 +374,7 @@ async function fireTaser(stateObj) {
         for (t=0; t < stateObj.taserTiles; t++) {
             if ((stateObj.currentPosition +t) % screenwidth !== 0) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
                         stateObj = immer.produce(stateObj, (newState) => {
                             newState.enemies[e].stunned += newState.stunLength;
                             newState.firingTaser = true
@@ -376,7 +400,7 @@ async function fireLaser(stateObj) {
             if ((stateObj.currentPosition-t) % screenwidth !== 0) {
                 console.log("not on side")
                 for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition - 1-t) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition - 1-t) {
                         stateObj = immer.produce(stateObj, (newState) => {
                             console.log("deleting enemy")
                             newState.enemies.splice(e, 1)
@@ -394,7 +418,7 @@ async function fireLaser(stateObj) {
         for (t=0; t < stateObj.laserTiles; t++) {
             if ((stateObj.currentPosition +t) % screenwidth !== 0) {
                 for (let e=0; e <stateObj.enemies.length; e++) {
-                    if (stateObj.enemies[e].enemyPosition === stateObj.currentPosition + 1 + t) {
+                    if (stateObj.enemies[e].currentPosition === stateObj.currentPosition + 1 + t) {
                         stateObj = immer.produce(stateObj, (newState) => {
                             console.log("deleting enemy")
                             newState.enemies.splice(e, 1)
@@ -461,18 +485,17 @@ async function upgradeTaserStunLength(stateObj) {
 
 async function checkIfPatrolEnemyCanMove(stateObj, enemyIndex, squaresToMove) {
     if (stateObj.enemies[enemyIndex].direction === "left") {
-        if (newState.enemies[i].enemyPosition % screenwidth ===0) {
+        if (newState.enemies[i].currentPosition % screenwidth ===0) {
             return false
-        } else if (stateObj.gameMap[stateObj.enemies[enemyIndex].enemyPosition-squaresToMove] === "wall") {
+        } else if (stateObj.gameMap[stateObj.enemies[enemyIndex].currentPosition-squaresToMove] === "wall") {
             return false
-        } else if (stateObj.enemies[enemyIndex].enemyPosition === stateObj.enemies[enemyIndex].leftmostSquare) {
+        } else if (stateObj.enemies[enemyIndex].currentPosition === stateObj.enemies[enemyIndex].leftmostSquare) {
             return false
         } else {
             return true
         }
     }
 }
-
 async function enemyMovementRow() {
         let stateObj = {...state}
 
@@ -483,78 +506,70 @@ async function enemyMovementRow() {
                         if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                             if (newState.enemies[i].direction === "left") {
                                 //change direction and pause if on end
-                                if (newState.enemies[i].enemyPosition === newState.enemies[i].leftmostSquare || newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall") {
+                                if (newState.enemies[i].currentPosition === newState.enemies[i].leftmostSquare || checkIfCanMove(newState.enemies[i], newState, "left") === false) {
                                     newState.enemies[i].direction = "right";  
                                 } else {
-                                    if (newState.enemies[i].enemyPosition % screenwidth ===0) {
-                                        newState.enemies[i].direction = "right";  
-                                    } else {
-                                        newState.enemies[i].enemyPosition -= 1
-                                    }
-                                    
-                                }
-                            } else {
-                                if (newState.enemies[i].enemyPosition === newState.enemies[i].rightMostSquare|| newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
+                                        newState.enemies[i].currentPosition -= 1
+                                    }  
+                            } else if (newState.enemies[i].direction === "right") {
+                                if (newState.enemies[i].currentPosition === newState.enemies[i].rightMostSquare|| checkIfCanMove(newState.enemies[i], newState, "right") === false) {
                                     newState.enemies[i].direction = "left";  
                                 } else {
-                                    if ((newState.enemies[i].enemyPosition+1) % screenwidth ===0) {
-                                        newState.enemies[i].direction = "left";  
-                                    } else {
-                                        newState.enemies[i].enemyPosition += 1
-                                    }
+                                        newState.enemies[i].currentPosition += 1
                                 }
                             }
                         }
+                        
                     } else if (stateObj.enemies[i].enemyType === "border" ) {
                         if (newState.intervalNumber % newState.enemies[i].interval === 0 && newState.enemies[i].stunned === 0) {
                             if (newState.enemies[i].direction === "left") {
                                 //if left and on leftmost square, go down
-                                if (newState.enemies[i].enemyPosition % screenwidth ===0 ) {
+                                if (newState.enemies[i].currentPosition % screenwidth ===0 ) {
                                     newState.enemies[i].direction = "down"; 
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition-1] === "wall" || newState.gameMap[newState.enemies[i].enemyPosition-1] === "window") { 
+                                } else if (newState.gameMap[newState.enemies[i].currentPosition-1] === "wall" || newState.gameMap[newState.enemies[i].currentPosition-1] === "window") { 
                                     newState.enemies[i].direction = "down"; 
-                                } else if (newState.enemies[i].enemyPosition > screenwidth-1 && newState.gameMap[newState.enemies[i].enemyPosition - screenwidth+1] === "wall") {
+                                } else if (newState.enemies[i].currentPosition > screenwidth-1 && newState.gameMap[newState.enemies[i].currentPosition - screenwidth+1] === "wall") {
                                         newState.enemies[i].direction = "up";  
                                 } else {
-                                    newState.enemies[i].enemyPosition -= 1
+                                    newState.enemies[i].currentPosition -= 1
                                 }
                             } else if (newState.enemies[i].direction === "down") {
-                                if (newState.enemies[i].enemyPosition >= mapSize-screenwidth) {
+                                if (newState.enemies[i].currentPosition >= mapSize-screenwidth) {
                                     newState.enemies[i].direction = "right"; 
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "wall" || newState.gameMap[newState.enemies[i].enemyPosition+screenwidth] === "window") {
+                                } else if (newState.gameMap[newState.enemies[i].currentPosition+screenwidth] === "wall" || newState.gameMap[newState.enemies[i].currentPosition+screenwidth] === "window") {
                                     newState.enemies[i].direction = "right"; 
-                                } else if (newState.enemies[i].enemyPosition % screenwidth !==0) {
-                                    if (newState.gameMap[newState.enemies[i].enemyPosition - 1] === "empty"  && newState.gameMap[newState.enemies[i].enemyPosition + screenwidth - 1] !== "wall") {
+                                } else if (newState.enemies[i].currentPosition % screenwidth !==0) {
+                                    if (newState.gameMap[newState.enemies[i].currentPosition - 1] === "empty"  && newState.gameMap[newState.enemies[i].currentPosition + screenwidth - 1] !== "wall") {
                                         newState.enemies[i].direction = "left";  
                                     } else {
-                                        newState.enemies[i].enemyPosition += screenwidth
+                                        newState.enemies[i].currentPosition += screenwidth
                                     }
                                 }  else {
-                                    newState.enemies[i].enemyPosition += screenwidth
+                                    newState.enemies[i].currentPosition += screenwidth
                                 }
                             } else if (newState.enemies[i].direction === "right") {
-                                if ((newState.enemies[i].enemyPosition+1) % screenwidth ===0 ) {
+                                if ((newState.enemies[i].currentPosition+1) % screenwidth ===0 ) {
                                     newState.enemies[i].direction = "up"; 
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition+1] === "wall") {
+                                } else if (newState.gameMap[newState.enemies[i].currentPosition+1] === "wall") {
                                     newState.enemies[i].direction = "up"; 
-                                } else if (newState.enemies[i].enemyPosition < mapSize - screenwidth && newState.gameMap[newState.enemies[i].enemyPosition + screenwidth-1] === "wall") {
+                                } else if (newState.enemies[i].currentPosition < mapSize - screenwidth && newState.gameMap[newState.enemies[i].currentPosition + screenwidth-1] === "wall") {
                                         newState.enemies[i].direction = "down";  
                                 } else {
-                                    newState.enemies[i].enemyPosition += 1
+                                    newState.enemies[i].currentPosition += 1
                                 }
                             } else if (newState.enemies[i].direction === "up") {
-                                if ((newState.enemies[i].enemyPosition) < screenwidth) {
+                                if ((newState.enemies[i].currentPosition) < screenwidth) {
                                     newState.enemies[i].direction = "left";  
-                                } else if (newState.gameMap[newState.enemies[i].enemyPosition - screenwidth] === "wall") {
+                                } else if (newState.gameMap[newState.enemies[i].currentPosition - screenwidth] === "wall") {
                                     newState.enemies[i].direction = "left"; 
-                                } else if (newState.enemies[i].enemyPosition < mapSize-screenwidth) {
-                                    if (newState.gameMap[newState.enemies[i].enemyPosition +screenwidth + 1] === "wall" && newState.gameMap[newState.enemies[i].enemyPosition + 1] !== "wall") {
+                                } else if (newState.enemies[i].currentPosition < mapSize-screenwidth) {
+                                    if (newState.gameMap[newState.enemies[i].currentPosition +screenwidth + 1] === "wall" && newState.gameMap[newState.enemies[i].currentPosition + 1] !== "wall") {
                                         newState.enemies[i].direction = "right";
                                     } else {
-                                        newState.enemies[i].enemyPosition -= screenwidth
+                                        newState.enemies[i].currentPosition -= screenwidth
                                     }
                                 } else {
-                                    newState.enemies[i].enemyPosition -= screenwidth
+                                    newState.enemies[i].currentPosition -= screenwidth
                                 }
                             }
                         }
@@ -595,7 +610,7 @@ async function enemyMovementRow() {
         })
     
         for (let i = 0; i < stateObj.enemies.length; i++) {
-            if (stateObj.enemies[i].enemyPosition === stateObj.currentPosition) {
+            if (stateObj.enemies[i].currentPosition === stateObj.currentPosition) {
                 loseTheGame("You got caught!")
             }
         }

@@ -10,7 +10,7 @@ let testLayoutArray =  ["empty", "empty", "empty", "empty", "empty", "empty", "e
 let testLayout2 = {
     enemies: [
     {
-        enemyPosition: (22*3) - 2,
+        currentPosition: (22*3) - 2,
         direction: "right",
         leftmostSquare: (22*2),
         rightMostSquare: (22*3)-1,
@@ -20,7 +20,7 @@ let testLayout2 = {
         enemyType: "patrol",
     },
     {
-        enemyPosition: (22*3) + 10,
+        currentPosition: (22*3) + 10,
         direction: "left",
         leftmostSquare: (22*3) + 2,
         rightMostSquare: (22*4)-3,
@@ -30,7 +30,7 @@ let testLayout2 = {
         enemyType: "patrol",
     },
     {
-        enemyPosition: (22*4) + 4,
+        currentPosition: (22*4) + 4,
         direction: "right",
         leftmostSquare: (22*4) + 2,
         rightMostSquare: (22*5)-2,
@@ -40,7 +40,7 @@ let testLayout2 = {
         enemyType: "patrol",
     },
     {
-        enemyPosition: (22*7)-5,
+        currentPosition: (22*7)-5,
         direction: "right",
         leftmostSquare: (22*2),
         rightMostSquare: (2*3)-1,
@@ -93,7 +93,7 @@ let testLayout3Array =
 let testLayout3 = {
     enemies: [
         {
-            enemyPosition: (22*7) + 12,
+            currentPosition: (22*7) + 12,
             direction: "left",
             leftmostSquare: 22,
             rightMostSquare: (22*9)-2,
@@ -103,7 +103,7 @@ let testLayout3 = {
             enemyType: "patrol",
         },
         {
-            enemyPosition: (22*3) - 4,
+            currentPosition: (22*3) - 4,
             direction: "right",
             leftmostSquare: (22*2),
             rightMostSquare: (22*3)-1,
@@ -114,7 +114,7 @@ let testLayout3 = {
         },
         
         {
-            enemyPosition: (22*4) + 4,
+            currentPosition: (22*4) + 4,
             direction: "right",
             leftmostSquare: (22*4) + 2,
             rightMostSquare: (22*5)-2,
@@ -124,7 +124,7 @@ let testLayout3 = {
             enemyType: "patrol",
         },
         {
-            enemyPosition: (22*6)-4,
+            currentPosition: (22*6)-4,
             direction: "right",
             leftmostSquare: (22*6),
             rightMostSquare: (22*6)-1,
