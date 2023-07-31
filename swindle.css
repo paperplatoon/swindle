@@ -44,12 +44,18 @@
   }
 
   .store-option {
-    height: 10vh;
-    width: 60vw;
-    background-color: brown;
-    color: white;
-    font-size: 4vh;
+    color: rgb(0, 105, 105);
+    width: 65vw;
+    height: 5vh;
+    background-color: rgb(122, 253, 253);
+    margin: auto;
+    margin-top: 3vh;
+    padding-top: 2vh;
+    justify-content: center;
+    display: flex;
+    transition: 0.2s all;
   }
+
 
   .store-clickable:hover {
     background-color: rgb(78, 238, 238);
@@ -65,6 +71,7 @@
 
   .return-to-map:hover {
     background-color: rgb(210, 81, 81);
+    color: white;
     border: 1px dashed rgb(0, 59, 59);
     cursor: pointer;
     font-size: 140%;
@@ -117,25 +124,5 @@
     color: red;
   }
 
-  .store-option {
-    color: rgb(0, 105, 105);
-    width: 65vw;
-    height: 5vh;
-    background-color: rgb(122, 253, 253);
-    margin: auto;
-    margin-top: 3vh;
-    padding-top: 2vh;
-    justify-content: center;
-    display: flex;
-    transition: 0.2s all;
-  }
-
-
-  .store-clickable:hover {
-    background-color: rgb(78, 238, 238);
-    border: 1px dashed rgb(0, 147, 147);
-    
-    cursor: pointer;
-    font-size: 140%;
-  }
+ 
  

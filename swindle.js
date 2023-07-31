@@ -14,12 +14,7 @@ let gameStartState = {
 
     intervalNumber: 0,
     firingTaser: false,
-    
-    
-
     firingLaser: false,
-    
-    
 
     stateIsSetUp: false,
     inStore: true,
@@ -112,8 +107,7 @@ async function renderTopBarStats(stateObj) {
 }
 
 async function renderScreen(stateObj) {
-    
-
+ 
     if (stateObj.inStore === true) {
         console.log("inStore = true for renderScreen")
         storeDiv = await renderStore(stateObj);
@@ -161,21 +155,17 @@ async function renderScreen(stateObj) {
                                 break;
                             }
                         }
-                        
                         for ( let v = 1; v < modifiedVisionCone+1; v++) { 
-    
                             //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                             if (squareIndex === (stateObj.enemies[i].currentPosition - v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)+ v)) ){
-                                        mapSquareDiv.classList.add("vision-cone")
-                                        if (stateObj.currentPosition === squareIndex) {
-                                            loseTheGame("hit by left-moving enemy!")
-                                        }    
+                                    mapSquareDiv.classList.add("vision-cone")
+                                    if (stateObj.currentPosition === squareIndex) {
+                                        loseTheGame("hit by left-moving enemy!")
+                                    }    
                                 }
                             }
-                         
                     } else {
                         let modifiedVisionCone = stateObj.enemies[i].visionCone
-                    
                         if (stateObj.enemies[i].direction === "right") {
                             for (m = 0; m < stateObj.enemies[i].visionCone; m++) {
                                 if (stateObj.gameMap[stateObj.enemies[i].currentPosition + m + 1] === "wall") {
@@ -183,9 +173,7 @@ async function renderScreen(stateObj) {
                                     break;
                                 }
                             }
-                            
                             for ( let v = 1; v < modifiedVisionCone+1; v++) { 
-    
                                 //if square is surveilled, and if relative enemy position is close enough to relative square + vision cone
                                 if (squareIndex === (stateObj.enemies[i].currentPosition + v) && (stateObj.enemies[i].currentPosition % screenwidth  === ((squareIndex % screenwidth)- v)) ){
                                     mapSquareDiv.classList.add("vision-cone")
@@ -445,6 +433,19 @@ async function fireLaser(stateObj) {
     return stateObj
 }
 
+function makeStoreOptionDiv(stateObj, textForDiv, functionToAdd, cashMinimum, className=false) {
+    let storeOptionDiv = document.createElement("Div")
+    storeOptionDiv.classList.add("store-option")
+    storeOptionDiv.textContent = textForDiv;
+    if (stateObj.bankedCash >= cashMinimum) {
+        storeOptionDiv.classList.add("store-clickable")
+        storeOptionDiv.onclick = function () {
+            functionToAdd(stateObj)
+        }
+    }
+    return storeOptionDiv
+}
+
 
 async function renderStore(stateObj) {
     console.log("renderingStore")
@@ -454,26 +455,12 @@ async function renderStore(stateObj) {
     topBarDiv = await renderTopBarStats(stateObj)
     storeDiv.append(topBarDiv)
     
-    let taserStunLengthUpgradeDiv = document.createElement("Div")
-    console.log("adding taserStun Div")
-    taserStunLengthUpgradeDiv.classList.add("store-option")
-    taserStunLengthUpgradeDiv.classList.add("taser-stun-length")
-    taserStunLengthUpgradeDiv.textContent = "Taser Stun Length Upgrade: " + stateObj.taserStunLengthUpgradeCost + " gold" //
-        if (stateObj.bankedCash >= stateObj.taserStunLengthUpgradeCost) {
-            taserStunLengthUpgradeDiv.classList.add("store-clickable")
-            taserStunLengthUpgradeDiv.onclick = function () {
-                upgradeTaserStunLength(stateObj)
-            }
-          }
-
-    let returnToMapDiv = document.createElement("Div")
-    returnToMapDiv.classList.add("store-option")
+    let taserText = "Taser Stun Length Upgrade: " + stateObj.taserStunLengthUpgradeCost + " gold"
+    let taserStunLengthUpgradeDiv = makeStoreOptionDiv(stateObj, taserText, upgradeTaserStunLength, stateObj.taserStunLengthUpgradeCost)
+    
+    let mapText = "Return to Map"
+    let returnToMapDiv = makeStoreOptionDiv(stateObj, mapText, leaveStore, 0)
     returnToMapDiv.classList.add("return-to-map")
-    returnToMapDiv.textContent = "Return to Map"
-    returnToMapDiv.onclick = function () {
-        console.log("returning to Map")
-        leaveStore(stateObj)
-    }
 
     storeDiv.append(taserStunLengthUpgradeDiv, returnToMapDiv)
     return storeDiv
@@ -487,7 +474,7 @@ async function leaveStore(stateObj) {
 async function upgradeTaserStunLength(stateObj) {
     console.log("stun length was " + stateObj.stunLength)
     stateObj = immer.produce(stateObj, (newState) => {
-        newState.currentHeistCash -= newState.taserStunLengthUpgradeCost;
+        newState.bankedCash -= newState.taserStunLengthUpgradeCost;
         newState.stunLength += 8;
         newState.taserStunLengthUpgradeCost += 50;
     })
@@ -631,10 +618,7 @@ async function enemyMovementRow() {
         
         await changeState(stateObj)
         await renderScreen(stateObj)
-        }
-        
-
-        
+        }    
 }
 
 function timeStuff() {
