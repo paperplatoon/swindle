@@ -93,8 +93,8 @@ let testLayout3Array =
 let testLayout3 = {
     enemies: [
         {
-            currentPosition: (22*7) + 12,
-            direction: "up",
+            currentPosition: (22*7) + 9,
+            direction: "down",
             interval: 1,
             visionCone: 2,
             stunned: 0,
@@ -103,6 +103,15 @@ let testLayout3 = {
         },
         {
             currentPosition: (22*8) +7,
+            direction: "up",
+            interval: 1,
+            visionCone: 3,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        {
+            currentPosition: (22*8) -6,
             direction: "up",
             interval: 1,
             visionCone: 3,
@@ -130,7 +139,7 @@ let testLayout3 = {
             patrolBuffer: 0,
         },
         {
-            currentPosition: (22*6)-4,
+            currentPosition: (22*5)-4,
             direction: "right",
             interval: 1,
             visionCone: 2,
@@ -142,7 +151,86 @@ let testLayout3 = {
 
     computers: [
         {
-            computerPosition: (22*3)-5,
+            computerPosition: (22*3)-6,
+            currentFunds: 25
+        },
+        {
+            computerPosition: (22*5) - 6,
+            currentFunds: 10
+        }
+    ],
+
+    currentPosition: 0,
+    exitPosition: 22-1,  
+    screenwidth: 22,
+    mapSize: 22*12,
+    mapRows: 12,
+    blankRows: 0,
+    mapArray: testLayout3Array
+}
+
+let testLayout4 = {
+    enemies: [
+        {
+            currentPosition: (22*7) + 9,
+            direction: "down",
+            interval: 1,
+            visionCone: 2,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        {
+            currentPosition: (22*8) +7,
+            direction: "up",
+            interval: 1,
+            visionCone: 3,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        {
+            currentPosition: (22*8) -6,
+            direction: "up",
+            interval: 1,
+            visionCone: 3,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        {
+            currentPosition: (22*3) - 4,
+            direction: "right",
+            interval: 2,
+            visionCone: 2,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        
+        {
+            currentPosition: (22*6) + 4,
+            direction: "right",
+            interval: 1,
+            visionCone: 4,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+        {
+            currentPosition: (22*5)-4,
+            direction: "right",
+            interval: 1,
+            visionCone: 2,
+            stunned: 0,
+            enemyType: "patrol",
+            patrolBuffer: 0,
+        },
+    ],
+
+    computers: [
+        {
+            computerPosition: (22*3)-6,
             currentFunds: 25
         },
         {
